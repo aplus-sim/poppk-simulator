@@ -1,0 +1,11 @@
+# 저작권 있는 논문 PDF 제외 (원하면 이 줄을 지우고 다시 add)
+*.pdf
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# 임시/출력
+*.tmp
+pk_simulation_result.csv
