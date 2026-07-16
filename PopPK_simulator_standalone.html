@@ -50,6 +50,206 @@
 </style>
 </head>
 <body>
+<script type="text/csv" id="data-curated">
+drug,parameter,description,estimate,rse
+eculizumab,CL,Clearance (L/h),0.0174,0.91
+eculizumab,theta7_WT_CL,Exponent to weight on CL,1.1400,7.46
+eculizumab,Vc,Volume of central compartment for healthy subjects (L),3.47,0.93
+eculizumab,Vc_pat,Volume of central compartment for PNH patients (L),5.68,6.11
+eculizumab,theta8_WT_Vc,Exponent to weight on Vc,0.8630,10.57
+eculizumab,Vp,Volume of peripheral compartment (L),0.79,3.28
+eculizumab,Q,Intercompartmental clearance between Vc and Vp (L/h),0.0134,7.46
+eculizumab,IIV_CL,Inter-individual variability for CL (%),15.62,10.08
+eculizumab,IIV_Vc,Inter-individual variability for Vc (%),12.74,11.24
+eculizumab,IIV_Vp,Inter-individual variability for Vp (%),36.80,35.67
+eculizumab,corr_CL_Vc,Correlation between CL and Vc,0.54,16.79
+eculizumab,prop,Proportional error (%),11.70,5.55
+adalimumab,V/F,Apparent volume of distribution (L),10.8,20
+adalimumab,CL/F,Apparent clearance (L/day),0.32,5
+adalimumab,SX_CL,Sex effect on CL,0.32,34
+adalimumab,WT_CL,Bodyweight effect on CL,0.81,28
+adalimumab,ka,First-order absorption rate (1/day),0.28,4
+adalimumab,kin,Zero-order CRP input (mg/L/day),22,15
+adalimumab,kout,First-order CRP output (1/day) [Fixed],0.875,
+adalimumab,C50,Concentration for 50% decrease of kin (mg/L),3.6,26
+adalimumab,DAS28_0,Baseline disease activity score (DAS28),5.5,3
+adalimumab,IC50,Concentration for 50% decrease in DAS28 (mg/L),11.0,16
+adalimumab,IIV_Vd,Inter-individual variability for Vd (%),92,16
+adalimumab,IIV_CL,Inter-individual variability for CL (%),17,27
+adalimumab,IIV_kin,Inter-individual variability for kin (%),65,18
+adalimumab,IIV_kout,Inter-individual variability for kout (%),,
+adalimumab,IIV_C50,Inter-individual variability for C50 (%),88,27
+adalimumab,IIV_Imax,Inter-individual variability for Imax (%),11,32
+adalimumab,IIV_IC50,Inter-individual variability for IC50 (%),71,17
+adalimumab,prop_PK,Proportional error for PK (%),24,9
+adalimumab,add_CRP,Additive error for CRP (mg/L),1.6,29
+adalimumab,prop_CRP,Proportional error for CRP (%),52,10
+adalimumab,add_DAS,Additive error for DAS28,68,8
+</script>
+<script type="text/csv" id="data-library">
+mAb,Reference,CL,VC,VP,Q,ka,F,Km,Vm,Route,NonLin,TMDD,Time dependency,Fixed Parameters,Detection,N,Smpls,CL_WT,VC_WT,VP_WT,Q_WT,Size descriptor,Ref size,CL_SEX,VC_SEX,VP_SEX,SEX,CL_ALB,VC_ALB,VP_ALB,ALB,CL_ADA,cov_remark,Basemodel included,Modelcode included
+aducanumab,https://doi.org/10.1002/psp4.12728,0.382,3.59,6.04,0.466,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,2961,50306,0.561,0.506,0.32,NA,BW,70.9,0.134,0.146,0.129,F,NA,NA,NA,NA,NA,NA,No,1
+alirocumab,https://doi.org/10.1007/s40262-016-0505-1,0.167,3.16,2.61,0.494,0.647,0.584,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,527,4396,NA,NA,NA,NA,NA,81,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+alirocumab,https://doi.org/10.1007/s40262-016-0505-1,0.176,4.67,2.61,0.343,0.307,0.556,NA,NA,s.c./i.v.,1,TMDD,0,"CL_WT, VC_WT, Q_WT",ELISA,2870,14097,0.75,1,NA,0.75,BW,85,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+alirocumab,https://doi.org/10.1007/s40262-018-0669-y,0.298,3.19,2.79,0.444,0.184,0.862,7.73,4.128,s.c./i.v.,1,MM,0,NA,ELISA,2799,13717,0,NA,NA,NA,BW,82.9,NA,NA,NA,0,NA,NA,NA,NA,NA,CL_WT linear,Yes,0
+amivantamab,https://doi.org/10.1002/cpt.3064,0.288,2.41,2.33,7.2,NA,NA,NA,NA,i.v.,0,NA,0,"CL_WT, VC_WT",ECL,362,8756,0.75,1,NA,NA,BW,59.9,0.237,NA,NA,F,NA,NA,NA,NA,0,NA,Yes,1
+anifrolumab,https://doi.org/10.1093/rheumatology/keab176,0.125,3.84,2.02,0.159,NA,NA,NA,NA,i.v.,1,TMDD,0,"CL_WT, VC_WT",ECL,202,NA,0.75,1,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+anifrolumab,https://doi.org/10.1002/jcph.2055,0.131,2.93,3.3,0.937,NA,NA,NA,NA,i.v.,1,TMDD,1,NA,ECL,670,6049,0.601,0.764,NA,NA,BW,69.1,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+atezolizumab,https://doi.org/10.1002/cpt.587,0.2,3.28,3.63,0.546,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,906,NA,0.808,0.559,NA,NA,BW,77,NA,-0.129,-0.27,M,-1.12,-0.35,NA,40,x 1.159,NA,Yes,0
+atezolizumab,https://doi.org/10.1002/cpt.1198,0.233,3.35,3.36,0.452,NA,NA,NA,NA,i.v.,0,NA,0,NA,NA,88,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+avelumab,https://doi.org/10.1002/psp4.12406,0.528,3.42,0.918,0.751,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,1827,10637,0.324,0.362,NA,NA,BW,71,-0.15,-0.16,NA,M,-0.438,-0.278,NA,NA,x 1.23,NA,No,1
+basiliximab,https://doi.org/10.1023/A:1020658023774,0.88,3.72,4.08,4.16,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,46,1049,NA,NA,NA,NA,NA,72,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+basiliximab,https://doi.org/10.1111/bcp.15235,0.26,2.8,3.9,0.91,NA,NA,NA,NA,i.v.,1,TMDD,0,NA,ELISA,16,NA,NA,NA,NA,NA,NA,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,Yes,0
+belimumab,https://doi.org/10.1007/s40262-017-0586-5,0.204,2.3,2.65,0.698,0.235,0.742,NA,NA,s.c./i.v.,0,NA,0,"CL_WT, VC_WT, VP_WT, Q_WT",ECL,688,4958,0.75,1,1,0.75,WT+BMI,67,NA,NA,NA,0,-0.736,NA,NA,41,NA,NA,No,0
+belimumab,https://doi.org/10.1002/jcph.104,0.215,2.56,2.73,0.459,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,1603,8143,0.506,1.14,NA,NA,WT+BMI,66.3,NA,NA,NA,0,-0.829,NA,NA,40,NA,NA,No,0
+belimumab,https://doi.org/10.1111/bcp.16263,0.223,2.66,2.36,0.494,0.226,0.802,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,2002,12061,0.739,0.711,0.711,0.739,FFM,40.486,NA,NA,NA,0,-1.11,NA,NA,41,0,NA,No,0
+benralizumab,https://doi.org/10.1007/s40262-019-00738-4,0.291,3.13,2.52,0.738,0.282,0.589,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA & ECL,2317,14938,0.807,0.803,0.528,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,x 2.24,NA,Yes,0
+benralizumab,https://doi.org/10.1002/psp4.12160,0.323,3.16,2.83,0.939,0.252,0.526,NA,NA,s.c./i.v.,0,NA,0,CL_WT,ELISA & ECL,200,1820,0.75,0.651,0.576,NA,BW,71.67,NA,NA,NA,0,NA,NA,NA,NA,x 4.57,NA,No,1
+bevacizumab,https://doi.org/10.1007/s00280-019-03946-8,0.271,2.99,6.09,6.456,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,719,8632,0.354,0.468,NA,NA,BW,71,0.262,0.247,NA,F,NA,NA,NA,NA,NA,NA,No,0
+bevacizumab,https://doi.org/10.1007/s00280-016-3079-6,0.206,2.68,2.42,0.446,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,1792,8943,0.589,0.47,0.47,0.589,BW,70,0.14,0.18,NA,F,-0.473,NA,NA,39,NA,NA,Yes,0
+bevacizumab,https://doi.org/10.1007/s00280-015-2701-3,0.17,3.14,2.63,0.36,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,19,86,NA,NA,NA,NA,NA,70,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+bevacizumab,https://doi.org/10.1007/s00280-012-2031-7,0.231,2.83,2.49,0.636,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,1213,5603,0.485,0.461,NA,NA,BW,78.3,NA,0.09,NA,F,NA,NA,NA,NA,NA,NA,No,0
+bevacizumab,https://doi.org/10.1007/s00280-007-0664-8,0.207,2.66,2.759,0.593,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,491,4629,0.368,0.411,NA,NA,BW,74,0.264,0.221,NA,F,0.726,-0.333,NA,37,0,NA,No,0
+bevacizumab,https://doi.org/10.1007/s40262-016-0406-3,0.19,4.2,7.7,0.69,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,130,486,NA,NA,NA,NA,NA,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+bezlotoxumab,https://doi.org/10.1128/AAC.01971-18,0.281,3.43,3.57,0.552,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA & ECL,1587,8784,0.477,0.477,0.477,0.477,BW,72,0.219,0.243,NA,F,-0.897,-0.12,NA,35,NA,V1_Alb linear,No,0
+brodalumab,https://doi.org/10.1111/bcpt.13202,0.155,4.68,2.41,0.328,0.3,0.548,0.02,6.07,s.c./i.v.,1,MM,0,"F, Km",ELISA,622,7725,0.767,0.938,NA,NA,BW,87,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+brodalumab,https://doi.org/10.1002/jcph.334,0.223,4.62,1.84,0.697,0.236,0.576,0.02,5.16,s.c./i.v.,1,MM,0,"F, Km",ELISA,196,1526,0.598,0.849,0.849,0.598,BW,90,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,Yes,0
+brodalumab,https://doi.org/10.1002/cpdd.103,0.28,3.9,2.89,1.01,0.255,0.576,0.01,4.39,s.c./i.v.,1,MM,0,Km,ELISA,82,NA,NA,NA,NA,NA,NA,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+canakinumab,https://doi.org/10.1038/psp.2012.6,0.104,3.71,2.24,0.165,0.266,0.667,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,349,6918,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+canakinumab,https://doi.org/10.2165/11599820-000000000-00000,0.137,3.3,2.71,0.429,0.269,0.7,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,233,NA,0.695,0.684,0.798,NA,BW,70,NA,NA,NA,0,-0.916,NA,NA,43,0,NA,No,0
+canakinumab,https://doi.org/10.1002/jcph.162,0.214,4.58,2.86,0.503,0.296,0.588,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,601,NA,0.612,0.971,0.275,NA,BW,93,NA,NA,NA,0,-0.948,NA,NA,43,0,NA,No,0
+casirivimab,https://doi.org/10.1007/s11095-024-03764-5,0.193,3.917,3.065,0.413,0.218,0.72,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,7598,23210,0.796,0.539,NA,NA,BW,81.6,-0.081,-0.109,NA,M,-1.078,-0.417,NA,43,0,NA,No,1
+cemiplimab,https://doi.org/10.1007/s10928-021-09739-y,0.29,3.32,1.65,0.638,NA,NA,NA,NA,i.v.,0,NA,0,NA,NA,549,11178,0.477,0.97,0.97,0.477,BW,76.2,NA,NA,NA,0,-0.926,NA,NA,38,NA,NA,No,0
+cemiplimab,https://doi.org/10.1002/psp4.12855,0.254,3.35,2.52,0.652,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,1063,17312,0.539,0.499,0.499,0.539,BW,73.2,-0.137,-0.08,NA,M,-1.11,-0.217,NA,38.6,0,NA,No,1
+cetuximab,https://doi.org/10.1111/bcp.13907,0.456,4.4,8.1,0.665,NA,NA,NA,NA,i.v.,0,NA,0,NA,LCMS,28,203,NA,NA,NA,NA,NA,62,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+cetuximab,https://doi.org/10.1158/1078-0432.CCR-11-1081,0.497,2.96,4.65,0.836,NA,NA,NA,NA,i.v.,1,Zero-order,0,NA,ELISA,96,1253,0.56,0.42,NA,NA,BSA,1.79,NA,NA,NA,0,-0.024,NA,NA,38,NA,NA,No,0
+cetuximab,https://doi.org/10.1097/FTD.0000000000000321,0.57,3.18,5.4,0.64,NA,NA,NA,NA,i.v.,1,Zero-order,0,NA,ELISA,34,544,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+daratumumab,https://doi.org/10.1002/jcph.1771,0.119,5.25,3.78,0.229,0.28,0.689,2.56,27.6,s.c./i.v.,1,MM,1,NA,ELISA,742,5159,1.24,0.91,NA,NA,BW,78.6,NA,0.105,NA,F,-1.85,NA,NA,37,NA,NA,No,0
+daratumumab,https://doi.org/10.1007/s12325-018-0815-9,0.117,4.4,3.3,0.207,NA,NA,0.305,20.232,i.v.,1,MM,1,NA,ELISA,694,4426,0.934,0.525,NA,NA,BW,78.6,NA,-0.146,NA,M,-0.421,NA,NA,37,NA,NA,No,0
+daratumumab,https://doi.org/10.1007/s12325-020-01247-8,0.116,4.09,3.06,1.541,NA,NA,0.93,49.92,i.v.,1,MM,1,Km,ELISA,107,NA,0.451,0.375,NA,NA,BW,78.6,NA,-0.205,NA,M,-1.149,NA,NA,37,0,NA,No,0
+daratumumab,https://doi.org/10.1111/bcp.15628,0.104,4.36,2.8,0.195,0.288,0.689,3.81,35.28,s.c./i.v.,1,MM,1,F,ELISA,239,1146,0.832,0.562,NA,NA,BW,76,NA,-0.168,NA,M,-0.665,NA,NA,38,0,NA,No,1
+denosumab,https://doi.org/10.2165/11598090-000000000-00000,0.078,2.62,1.37,1.09,0.257,0.612,NA,NA,s.c./i.v.,1,TMDD,0,"CL_WT, VC_WT, VP_WT, Q_WT",ELISA,1076,14228,0.75,0.75,0.75,0.75,BW,66,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+denosumab,https://doi.org/10.2165/11594240-000000000-00000,0.072,2.59,1.29,0.96,0.25,0.637,NA,NA,s.c./i.v.,1,TMDD,0,"CL_WT, VC_WT, VP_WT, Q_WT",ELISA,1564,22944,0.75,0.75,0.75,0.75,BW,66,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+dostarlimab,https://doi.org/10.1111/bcp.15339,0.152,2.98,2.1,0.547,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,546,4804,0.419,0.47,0.47,NA,BW,70,0.165,0.162,NA,F,-1.01,-0.153,NA,39,0,NA,No,0
+dostarlimab,https://doi.org/10.1111/bcp.16325,0.157,3.09,2.48,0.458,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,868,7957,0.523,0.48,0.48,NA,BW,70,0.15,0.137,NA,F,-0.922,-0.132,NA,39,0,NA,No,0
+dupilumab,https://doi.org/10.1002/psp4.12136,0.127,2.6,1.56,0.27,0.261,0.623,0.01,2.756,s.c./i.v.,1,MM,0,Km,ELISA,197,2518,NA,0.737,NA,NA,BW,75,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,1
+dupilumab,https://doi.org/10.1002/psp4.12667,0.115,2.76,1.61,0.263,0.263,0.609,2.08,4.3884,s.c./i.v.,1,MM,0,NA,ELISA,2114,14584,0.889,0.667,NA,NA,BW,78,NA,NA,NA,0,-0.484,-0.484,NA,44,x 1.191,NA,No,0
+durvalumab,https://doi.org/10.1007/s40262-019-00804-x,0.257,4.63,2.68,0.902,NA,NA,NA,NA,i.v.,0,NA,0,NA,ECL,267,1812,0.581,0.451,NA,NA,BW,74.7,-0.21,-0.21,NA,M,-1.58,-0.566,NA,40,NA,NA,No,0
+durvalumab,https://doi.org/10.1002/cpt.982,0.232,3.51,3.56,0.477,NA,NA,0.608,0.961,i.v.,1,MM,0,NA,ECL,1409,7406,0.4,0.406,NA,NA,BW,69.8,-0.129,-0.166,-0.236,M,-0.027,NA,NA,38,x 1.256,CL_Alb linear,No,0
+durvalumab,https://doi.org/10.1002/jcph.2288,0.191,3.45,2.13,0.469,NA,NA,NA,NA,i.v.,1,NA,1,NA,ECL,3737,NA,0.376,0.499,NA,NA,BW,69.4,-0.149,-0.14,NA,M,-0.659,NA,NA,39,0,NA,No,0
+eculizumab,https://doi.org/10.3389/fneur.2021.696385,0.17,2.15,2.55,4.56,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,62,NA,0.63,1.28,1.28,0.63,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+eculizumab,https://doi.org/10.1007/s00228-024-03703-8,0.418,3.47,0.79,0.322,NA,NA,NA,NA,i.v.,0,NA,0,NA,ECL,289,4136,1.14,0.863,NA,NA,BW,80.9,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+elotuzumab,https://doi.org/10.1002/jcph.1698,0.081,3.94,2.01,0.515,NA,NA,298,48.068,i.v.,1,MM,0,Q_WT,ELISA,420,NA,1.33,0.348,0.623,0.75,BW,75,NA,-0.19,NA,M,NA,NA,NA,NA,NA,NA,No,1
+elotuzumab,https://doi.org/10.1007/s10928-016-9469-x,0.09,4.04,2.22,0.676,NA,NA,253,37.2084,i.v.,1,MM,0,Q_WT,ELISA,375,6958,1.16,0.332,0.617,0.75,BW,75,NA,-0.2,NA,M,NA,NA,NA,NA,NA,NA,No,1
+erenumab,https://doi.org/10.1007/s11095-017-2183-6,0.214,4.27,2.73,3.34,0.432,0.74,NA,NA,s.c./i.v.,1,TMDD,0,"CL_WT, VC_WT",ELISA,78,1297,0.75,1,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+evinacumab,https://doi.org/10.1002/psp4.12711,0.096,2.56,2.25,0.279,0.181,0.714,1.02,3.16,s.c./i.v.,1,MM,0,CL_WT ,ELISA,278,NA,0.75,0.875,NA,NA,BW,74.1,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+golimumab,https://doi.org/10.1016/j.clinthera.2019.11.010,0.544,3.43,2.27,0.291,0.213,0.522,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,1227,10690,0.812,0.873,0.9,1.22,BW,70,NA,NA,NA,0,-1.15,NA,NA,42,x 1.243,NA,No,0
+guselkumab,https://doi.org/10.1111/bcp.15364,0.255,3.6,1.78,0.369,0.313,0.492,NA,NA,s.c./i.v.,0,NA,0,NA,DELFIA & ECL,2623,23097,0.971,1.18,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,Yes,1
+guselkumab,https://doi.org/10.1002/cpt.3235,0.314,3.66,2.9,0.286,0.106,0.626,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,214,2087,0.554,0.458,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+imdevimab,https://doi.org/10.1007/s11095-024-03764-5,0.236,3.823,3.199,0.403,0.235,0.662,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,7598,22983,0.796,0.539,NA,NA,BW,81.6,-0.069,-0.088,NA,M,-0.964,-0.417,NA,43,0,NA,No,1
+inebilizumab,https://doi.org/10.1007/s40262-021-01071-5,0.188,2.95,2.57,0.363,NA,NA,5.89,0.832,i.v.,1,MM,1,NA,ELISA,213,1626,0.57,0.39,0.4,0.84,BW,66.2,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+infliximab,https://doi.org/10.1097/MIB.0000000000000212,0.381,2.37,1.37,0.122,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,54,169,0.612,0.696,0.604,1.15,BW,70,NA,NA,NA,0,-1.39,NA,NA,40,x 2.59,NA,No,0
+infliximab,https://doi.org/10.1007/s00228-009-0718-4,0.407,3.29,7.14,4.13,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,482,4145,NA,0.538,NA,NA,BW,79,-0.236,-0.137,NA,M,-1.54,NA,NA,41,x 1.471,NA,No,0
+infliximab,https://doi.org/10.1177/0091270008316886,0.273,3.06,2.94,1.72,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,274,8137,NA,0.744,NA,NA,BSA,1.94,NA,-0.1,NA,M,NA,NA,NA,NA,x 1.419,NA,No,0
+infliximab,https://doi.org/10.1016/j.clinthera.2011.06.002,0.35,3.426,1.235,0.14,NA,NA,NA,NA,i.v.,0,NA,0,Q_WT,ELISA,580,NA,0.52,0.606,0.256,1,BW,65,NA,NA,NA,0,-0.82,NA,NA,41,x 1.294,NA,No,0
+infliximab,https://doi.org/10.1111/bcp.12313,0.456,2.3,3.6,4.32,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,48,412,NA,1.2,NA,NA,BW,65,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+infliximab,https://doi.org/10.1111/apt.13299,0.199,4.94,3.13,0.062,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,42,188,NA,NA,NA,NA,NA,NA,0.345,NA,NA,F,NA,NA,NA,NA,x 1.722,NA,No,0
+infliximab,https://doi.org/10.1080/14712598.2019.1635583,0.36,3.57,1.65,4.8,NA,NA,NA,NA,i.v.,0,NA,0,Q,ELISA,326,2415,NA,0.669,NA,NA,BW,70.8,0.255,NA,NA,F,NA,NA,NA,NA,x 1.478,NA,Yes,0
+infliximab,https://doi.org/10.1080/14712598.2019.1635583,0.336,3.38,1.7,4.8,NA,NA,NA,NA,i.v.,0,NA,0,Q,ELISA,323,2466,NA,0.425,NA,NA,BW,70.3,0.283,NA,NA,F,NA,NA,NA,NA,x 1.394,NA,Yes,0
+infliximab,https://doi.org/10.1111/apt.16609,0.355,3.1,1.93,0.598,0.273,0.791,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,175,2772,0.666,0.385,1.08,1.26,BW,70,NA,NA,NA,0,-0.826,NA,NA,44,x 1.39,NA,Yes,0
+ipilimumab,https://doi.org/10.1111/bcp.12323,0.36,4.15,3.11,0.986,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,499,2095,0.642,0.708,NA,NA,BW,80,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+ipilimumab,https://doi.org/10.1002/psp4.12477,0.317,3.95,3.18,0.67,NA,NA,NA,NA,i.v.,1,NA,1,NA,NA,3411,12545,0.694,0.6,NA,NA,BW,76.8,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+isatuximab,https://doi.org/10.1002/psp4.12561,0.229,5.13,3.62,1.03,NA,NA,0.3,16.74432,i.v.,1,MM,1,NA,ELISA,476,7697,0.621,0.472,0.719,0.477,BW,75.6,NA,-0.126,NA,M,NA,NA,NA,NA,NA,NA,No,0
+isatuximab,https://doi.org/10.1002/psp4.12666,0.181,4.85,5.68,1.003,NA,NA,0.046,16.9944,i.v.,1,MM,0,NA,ELISA,186,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+lecanemab,https://doi.org/10.1002/psp4.12862,0.434,3.22,2.19,0.838,NA,NA,NA,NA,i.v.,0,NA,0,NA,LCMS,725,9027,0.403,0.606,NA,NA,BW,73.7,-0.208,-0.107,NA,M,-0.243,NA,NA,42.9,x 1.09,NA,No,1
+lecanemab,https://doi.org/10.1002/psp4.13224,0.37,3.24,2,0.172,NA,NA,NA,NA,i.v.,0,NA,0,NA,LCMS,1619,21929,0.353,0.513,NA,NA,BW,72,-0.209,-0.132,NA,M,-0.374,NA,NA,43,x 1.13,NA,No,1
+margetuximab,https://doi.org/10.1093/annonc/mdx002,0.299,3.73,3.73,0.885,NA,NA,NA,NA,i.v.,1,MM,0,NA,ELISA,66,NA,0.75,1,1,0.75,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+mepolizumab,https://doi.org/10.5414/CP202446,0.21,3.6,3.56,1.008,NA,NA,NA,NA,i.v.,0,NA,0,NA,NA,11,NA,0.75,0.75,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+mirikizumab,https://doi.org/10.1007/s40262-023-01281-z,0.552,3.4,1.58,0.181,0.182,0.422,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,233,4103,NA,0.247,NA,NA,BW,75.4,NA,NA,NA,0,-0.951,NA,NA,43.2,0,NA,No,0
+mirikizumab,https://doi.org/10.1007/s40262-023-01281-z,0.528,3.11,1.69,0.209,0.169,0.476,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,1129,7578,0.534,0.525,0.525,0.534,BW,70.7,NA,NA,NA,0,-0.981,NA,NA,45,0,NA,No,0
+mogamulizumab,https://doi.org/10.1002/jcph.1564,0.331,3.65,2.48,1.277,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,444,4775,NA,0.884,NA,NA,BSA,1.82,-0.23,NA,NA,M,-1.81,NA,-1.47,39,NA,NA,Yes,0
+mosunetuzumab,https://doi.org/10.1111/cts.13825,0.584,5.49,6.17,1.46,NA,NA,NA,NA,i.v.,0,NA,0,NA,NA,439,7250,0.549,0.433,0.737,NA,BW,78,-0.128,-0.126,NA,M,NA,-0.481,NA,39,0,NA,No,1
+natalizumab,https://doi.org/10.1002/jcph.894,0.15,3.76,1.82,0.403,0.266,0.822,7.55,3.72,s.c./i.v.,1,MM,0,NA,ELISA,1286,12788,0.863,0.292,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,x 2.54,NA,Yes,0
+necitumumab,https://doi.org/10.1007/s40262-016-0452-x,0.27,3.41,3.29,0.439,NA,NA,7.97,13.56,i.v.,1,MM,0,NA,NA,807,4920,0.768,0.498,0.498,0.768,BW,70,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+nimotuzumab,https://doi.org/10.1002/jcph.496,0.017,1.43,18.5,0.077,NA,NA,NA,NA,i.v.,1,TMDD,0,NA,ELISA,12,443,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+nimotuzumab,https://doi.org/10.3390/pharmaceutics12121147,0.231,2.63,0.01,0.691,NA,NA,NA,NA,i.v.,1,TMDD,0,NA,ELISA,20,422,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+nivolumab,https://doi.org/10.1186/s40425-019-0669-y,0.211,3.46,3.46,0.48,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,221,1715,0.97,NA,NA,NA,BSA,1.95,-0.17,NA,NA,M,-1.34,NA,NA,42,NA,NA,No,1
+nivolumab,https://doi.org/10.1007/s00280-019-03771-z,0.199,4.46,2.52,0.624,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA & ECL,1302,8585,0.498,0.428,NA,NA,BW,80,-0.134,-0.189,NA,M,-0.869,NA,NA,40,NA,NA,No,0
+nivolumab,https://doi.org/10.1002/jcph.1324,0.187,4.13,2.5,0.746,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA & ECL,1074,7514,0.754,0.615,NA,NA,BW,80,NA,0.102,NA,F,-0.711,NA,NA,40,NA,NA,No,0
+nivolumab,https://doi.org/10.1002/psp4.12143,0.168,3.63,2.78,0.77,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA & ECL,1895,12292,0.566,0.597,NA,NA,BW,80,0.165,0.15,NA,F,NA,NA,NA,NA,NA,NA,No,0
+nivolumab,https://doi.org/10.1002/psp4.12476,0.204,4.27,2.7,0.838,NA,NA,NA,NA,i.v.,1,NA,1,NA,NA,6468,32835,0.53,0.534,NA,NA,BW,80,-0.181,-0.161,NA,M,NA,NA,NA,NA,0,NA,No,1
+nivolumab,https://doi.org/10.1002/jcph.1432,0.191,4.19,2.64,0.703,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA & ECL,1200,6945,0.529,0.74,NA,NA,BW,71,-0.182,-0.132,NA,M,NA,NA,NA,NA,0,NA,No,0
+nivolumab,https://doi.org/10.1038/s41416-024-02659-x,0.219,4.17,3.38,1.207,NA,NA,NA,NA,i.v.,0,NA,0,NA,LCMS,364,992,0.348,0.81,NA,NA,BW,73,NA,NA,-0.558,M,-0.738,NA,NA,38,0,NA,Yes,0
+nivolumab,https://doi.org/10.1002/cpt.3148,0.191,4.27,2.63,0.782,0.396,0.767,NA,NA,s.c./i.v.,1,NA,1,NA,NA,3540,19350,0.588,0.626,NA,NA,BW,80,-0.162,-0.139,NA,M,NA,NA,NA,NA,0,NA,No,1
+obinutuzumab,https://doi.org/10.1038/psp.2014.42,0.083,2.76,1.01,1.29,NA,NA,NA,NA,i.v.,1,NA,1,"VP_WT, Q_WT",ELISA,678,12634,0.615,0.383,1,0.75,BW,75,0.22,0.18,NA,F,NA,NA,NA,NA,NA,NA,No,1
+obinutuzumab,https://doi.org/10.1111/bcp.13974,0.074,2.72,1.23,1.32,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,961,16301,0.639,0.378,1.08,NA,BW,75,0.18,0.19,NA,F,-0.682,NA,NA,40,0,NA,No,0
+ocrelizumab,https://doi.org/10.1111/bcp.14658,0.17,2.78,2.68,0.294,NA,NA,NA,NA,i.v.,1,NA,1,Q_WT,ELISA,941,4901,0.684,0.397,0.853,0.75,BW,75,NA,0.12,NA,F,NA,NA,NA,NA,NA,NA,No,0
+ofatumumab,https://doi.org/10.1002/jcph.268,0.18,3.26,2.07,0.532,NA,NA,NA,NA,i.v.,1,TMDD,0,CL_WT,ELISA,477,6908,1,0.814,0.813,NA,BSA,1.87,NA,-0.115,NA,M,NA,NA,NA,NA,NA,NA,No,0
+ofatumumab,https://doi.org/10.1007/s40263-021-00895-w,0.34,2.62,2.8,0.358,0.157,0.685,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,1440,9168,1.52,1.2,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+olaratumab,https://doi.org/10.1007/s40262-017-0562-0,0.559,4.16,3.58,0.756,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,171,1501,0.431,0.61,NA,NA,BW,80,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+panitumumab,https://doi.org/10.1177/0091270009344989,0.273,3.95,2.59,0.39,NA,NA,0.426,12.1,i.v.,1,MM,0,NA,ELISA,1200,8482,0.411,0.526,NA,NA,BW,80,-0.23,-0.17,NA,M,NA,NA,NA,NA,NA,NA,No,0
+pembrolizumab,https://doi.org/10.1007/s10928-017-9528-y,0.22,3.48,4.06,0.795,NA,NA,NA,NA,i.v.,0,NA,0,NA,ECL,2195,12171,0.578,0.492,NA,NA,BW,76.8,-0.15,-0.134,NA,M,-0.907,-0.208,NA,39.6,NA,NA,No,1
+pembrolizumab,https://doi.org/10.1002/psp4.12132,0.168,2.88,2.85,0.384,NA,NA,0.0784,0.114,i.v.,1,MM,0,NA,ECL,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+pembrolizumab,https://doi.org/10.1016/j.xphs.2018.10.064,0.221,3.15,3.54,0.736,NA,NA,NA,NA,i.v.,0,NA,0,NA,NA,644,3909,0.555,0.543,0.543,0.555,BW,75,-0.163,-0.139,NA,M,-0.836,-0.26,NA,39,0,NA,No,1
+pertuzumab,https://doi.org/10.1007/s00280-014-2560-3,0.235,3.11,2.46,0.534,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,481,4525,0.516,0.747,0.83,NA,LBW,48,NA,NA,NA,0,-1.06,NA,NA,39,NA,NA,No,0
+pertuzumab,https://doi.org/10.1007/s11095-006-0205-x,0.214,2.74,2.15,0.556,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,153,1458,0.587,1.16,NA,NA,"BSA_V1, WT_CL",1.73,NA,NA,NA,0,-1.01,NA,NA,39,NA,NA,No,0
+pertuzumab,https://doi.org/10.1007/s00280-021-04296-0,0.163,2.77,2.49,0.616,0.348,0.712,NA,NA,s.c./i.v.,0,NA,0,NA,LCMS,489,5140,1.25,0.839,NA,0.716,LBW,45.09,NA,NA,NA,0,-0.629,NA,NA,43.25,0,NA,No,0
+pozelimab,https://doi.org/10.1007/s10928-024-09941-8,0.151,2.476,9.901,0.393,0.173,0.686,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,106,1640,0.999,0.756,0.756,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+ramucirumab,https://doi.org/10.1111/bcp.13403,0.355,3.26,2.04,0.245,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,1639,6427,0.499,0.559,NA,NA,BW,68,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+raxibacumab,https://doi.org/10.1111/bcp.14894,0.187,3.23,2.29,0.5,NA,NA,NA,NA,i.v.,0,NA,0,NA,ECL,322,2229,0.83,0.7,0.85,1.16,BW,76.9,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,1
+relatlimab,https://doi.org/10.1158/1078-0432.CCR-23-2396,0.159,4.13,2.97,0.612,NA,NA,1.47,1.8624,i.v.,1,MM,1,NA,NA,1713,10015,0.722,0.37,0.633,NA,BW,75,-0.199,-0.154,NA,M,-0.868,NA,NA,40,0,NA,No,0
+reslizumab,https://doi.org/10.1002/jcph.1609,0.171,3.13,2.05,0.24,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,804,10314,0.561,0.606,NA,NA,BW,73,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+risankizumab,https://doi.org/10.1007/s40262-019-00759-z,0.243,4.86,4.25,0.656,0.229,0.89,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,1899,13123,0.933,1.17,0.377,NA,BW,70,NA,NA,NA,0,-0.715,NA,NA,44,x 1.428,NA,No,0
+risankizumab,https://doi.org/10.1007/s40262-018-0704-z,0.3,5.66,3.43,0.33,0.18,0.72,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,157,2831,0.93,0.99,0.99,0.93,BW,70,NA,NA,NA,0,-1.54,NA,NA,40,NA,NA,No,0
+risankizumab,https://doi.org/10.1002/jcph.1473,0.244,4.87,4.25,0.648,0.23,0.89,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,NA,NA,0.935,1.18,0.36,NA,BW,70,NA,NA,NA,0,-0.717,NA,NA,44,x 1.431,NA,No,0
+risankizumab,https://doi.org/10.1007/s40744-022-00495-0,0.248,4.71,4.26,0.839,0.218,0.835,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,1527,3631,0.869,1.46,NA,NA,BW,70,NA,NA,NA,0,-0.703,NA,NA,45,0,NA,No,0
+risankizumab,https://doi.org/10.1002/cpt.3330,0.269,4.56,2.79,0.254,0.187,0.83,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,1509,8185,0.679,1.1,NA,NA,BW,70,-0.081,NA,NA,M,-1.21,NA,NA,43,0,NA,No,1
+rituximab,https://doi.org/10.1111/bcp.13270,0.45,4.1,6.88,1.72,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,64,674,NA,1,NA,NA,BSA,1.8,0.37,NA,NA,F,NA,NA,NA,NA,NA,NA,No,0
+rituximab,https://doi.org/10.1111/bcp.12098,0.159,2.48,2.54,0.94,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,20,244,NA,NA,NA,NA,NA,69,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+rituximab,https://doi.org/10.1177/0091270011430506,0.171,4.15,2.32,1.15,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,21,NA,NA,NA,NA,NA,NA,80,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+rituximab,https://doi.org/10.1177/0091270005277075,0.257,2.98,3.64,0.656,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,102,1002,1.02,0.73,NA,NA,BSA,1.72,0.39,0.17,NA,F,NA,NA,NA,NA,NA,NA,No,0
+rituximab,https://doi.org/10.1111/bcp.13271,0.252,4.62,8.61,1.02,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,29,512,NA,1.23,NA,NA,BW,70,NA,-0.214,NA,M,NA,NA,NA,NA,0,NA,No,0
+rituximab,https://doi.org/10.1007/s00280-018-3524-9,0.3,3.191,4.154,0.446,NA,NA,NA,NA,i.v.,0,NA,0,NA,ECL,251,5341,NA,1.11,NA,NA,BSA,1.72,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+rituximab,https://doi.org/10.1111/bcp.13991,0.23,2.9,5,1.8,NA,NA,NA,NA,i.v.,1,TMDD,0,NA,ELISA,25,134,NA,0.49,NA,NA,BW,67,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+rituximab,https://doi.org/10.1002/psp4.12665,0.207,4.99,3.7,0.42,0.372,0.633,NA,NA,s.c./i.v.,1,NA,1,NA,ELISA,255,4739,1.37,0.8,0.8,1.37,BSA,1.9,NA,-0.091,NA,M,NA,NA,NA,NA,0,NA,No,1
+rituximab,https://doi.org/10.1007/s40262-016-0470-8,0.137,3.08,2.54,0.31,NA,NA,NA,NA,i.v.,1,TMDD,1,NA,ELISA,118,1943,NA,0.904,1.31,NA,BSA,1.9,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+rituximab,https://doi.org/10.1111/j.1472-8206.2009.00714.x,0.117,3.522,12,0.595,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,10,157,NA,1,NA,NA,BSA,1,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+rituximab,https://doi.org/10.1007/s00280-016-3083-x,0.141,0.95,1.2,0.704,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,21,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+rituximab,https://doi.org/10.3389/fphar.2024.1197651,1.157,2.48,4.68,0.175,NA,NA,NA,NA,i.v.,1,TMDD,0,NA,ELISA,41,171,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+secukinumab,https://doi.org/10.1002/jcph.876,0.19,3.61,2.87,0.39,0.18,0.729,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,1233,10193,NA,NA,NA,NA,NA,90,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+siltuximab,https://doi.org/10.1007/s00280-019-03939-7,0.165,3.038,2.598,0.624,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,460,7761,NA,0.65,0.65,NA,BW,73,NA,NA,NA,0,-0.84,-0.35,-0.35,41,NA,NA,No,0
+siltuximab,https://doi.org/10.1158/1078-0432.CCR-09-2581,0.316,4.518,1.912,3.479,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,36,NA,NA,NA,NA,NA,NA,80,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+sutimlimab,https://doi.org/10.1124/jpet.122.001511,0.137,3.83,1.98,0.475,NA,NA,8.61,236.4,i.v.,1,MM,0,NA,NA,154,2470,1.71,0.536,NA,NA,BW,71.85,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+teclistamab,https://doi.org/10.1007/s11523-023-00989-z,0.449,4.13,1.34,0.039,0.133,0.718,NA,NA,s.c./i.v.,1,NA,1,NA,NA,338,4840,0.704,0.358,1.4,NA,BW,74,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+teprotumumab,https://doi.org/10.1007/s40262-021-01003-3,0.334,3.94,4.21,0.859,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA & ECL,119,1060,NA,NA,NA,NA,NA,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+tezepelumab,https://doi.org/10.1002/jcph.1803,0.158,2.581,2.29,0.726,0.247,0.645,NA,NA,s.c./i.v.,0,NA,0,NA,NA,NA,NA,0.957,0.917,0.695,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,Yes,0
+tezepelumab,https://doi.org/10.1002/jcph.2433,0.172,3.91,2.17,0.568,0.316,0.768,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,1368,12541,1.01,0.963,0.609,0.588,BW,70,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+tocilizumab,https://doi.org/10.1002/jcph.826,0.216,4.5,2.8,0.274,0.23,0.8,0.34,8.55,s.c./i.v.,1,MM,0,NA,ELISA,1699,NA,0.51,0.68,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+tocilizumab,https://doi.org/10.1177/0091270009350623,0.3,3.5,2.9,0.2,NA,NA,2.7,7.5,i.v.,1,MM,0,NA,ELISA,1793,7415,0.7,NA,NA,NA,BSA,1.8,-0.16,NA,NA,M,-0.4,0.7,NA,38,NA,NA,No,0
+toripalimab,https://doi.org/10.3389/fphar.2022.1069818,0.358,3.71,0.796,0.876,NA,NA,NA,NA,i.v.,1,NA,1,NA,NA,1014,10430,0.097,0.488,NA,NA,BW,64,-0.19,-0.19,NA,M,-0.676,NA,NA,43.7,x 1.191,NA,No,0
+tralokinumab,https://doi.org/10.1111/bcp.12725,0.204,1.867,3.357,1.582,0.34,0.8,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,578,5504,0.75,1,1,0.75,BW,73,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+tralokinumab,https://doi.org/10.1002/cpdd.1113,0.149,2.71,1.44,0.159,0.184,0.761,NA,NA,s.c./i.v.,0,NA,0,NA,ELISA,2561,13361,0.873,0.783,0.783,0.873,BW,75,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+trastuzumab,https://doi.org/10.1007/s00280-019-03850-1,0.25,3.15,5.55,0.47,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,702,7098,0.637,0.507,NA,NA,BW,67,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+trastuzumab,https://doi.org/10.1007/s00280-018-3728-z,0.127,2.62,2.97,0.544,NA,NA,8.92,8.81,i.v.,1,MM,0,NA,ELISA,1582,26040,0.967,NA,NA,NA,BW,60,NA,NA,NA,0,-0.998,NA,NA,40,NA,NA,No,0
+trastuzumab,https://doi.org/10.1007/s00280-015-2922-5,0.111,2.91,3.06,0.445,0.404,0.771,33.9,11.9,s.c./i.v.,1,MM,0,NA,ELISA,595,15761,1.04,0.443,0.5,NA,BW,68,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+trastuzumab,https://doi.org/10.1007/s00280-014-2400-5,0.23,3.63,3.74,0.366,NA,NA,3.7,5.76,i.v.,1,MM,0,NA,ELISA,266,1419,1.07,0.648,NA,NA,BW,62,NA,NA,NA,0,-0.721,NA,NA,38.2,NA,NA,No,0
+trastuzumab,https://doi.org/10.1007/s00280-005-1026-z,0.225,2.95,4.79,0.484,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,476,3849,0.556,NA,NA,NA,BW,70,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,No,0
+trastuzumab,https://doi.org/10.1111/bcp.12875,0.22,2.1,1.3,0.36,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,79,784,0.56,0.7,NA,NA,BW,61,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+tremelimumab,https://doi.org/10.1002/jcph.309,0.26,3.97,3.71,0.461,NA,NA,NA,NA,i.v.,0,NA,0,NA,ELISA,654,3452,NA,0.51,NA,NA,BW,80,-0.174,-0.154,NA,M,NA,NA,NA,NA,0,NA,No,0
+tremelimumab,https://doi.org/10.1111/cts.12633,0.31,3.85,1.72,0.273,NA,NA,NA,NA,i.v.,0,NA,0,NA,NA,376,1328,NA,NA,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,0,NA,No,0
+tremelimumab,https://doi.org/10.1111/bcp.15622,0.237,3.64,2.4,0.357,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,956,4043,0.638,0.606,NA,NA,BW,71,NA,NA,NA,0,-0.996,NA,NA,39,0,NA,Yes,1
+tremelimumab,https://doi.org/10.1002/cpt.3063,0.248,3.72,2.61,0.454,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,1605,5455,0.37,0.453,NA,NA,BW,70.2,-0.134,-0.149,NA,M,-0.809,NA,NA,38.3,0,NA,No,0
+tremelimumab,https://doi.org/10.1002/jcph.2288,0.258,3.59,2.69,0.48,NA,NA,NA,NA,i.v.,1,NA,1,NA,ELISA,2406,NA,0.384,0.467,NA,NA,BW,70.2,-0.098,-0.116,NA,M,-0.78,NA,NA,38.3,0,NA,No,0
+ustekinumab,https://doi.org/10.1002/jcph.1582,0.186,3.01,1.43,0.157,0.142,0.872,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,823,9014,0.641,0.592,0.667,0.631,BW,71.2,0.08,NA,NA,F,-1.64,NA,NA,41,x 1.14,NA,No,0
+ustekinumab,https://doi.org/10.3390/pharmaceutics13101587,0.277,3.57,3.3,1.89,0.381,0.71,NA,NA,s.c./i.v.,1,TMDD,0,NA,ELISA,57,574,0.598,0.59,0.586,NA,FFM,45,NA,NA,NA,0,-0.016,NA,NA,43,0,CL_Alb linear,Yes,1
+ustekinumab,https://doi.org/10.1111/bcp.14971,0.235,5.05,0.748,0.043,0.142,0.624,NA,NA,s.c./i.v.,0,NA,0,"ka, CL_WT, VC_WT, VP_WT, Q_WT",ELISA,86,311,0.75,1,1,0.75,BW,65.27,NA,NA,NA,0,-1.21,NA,NA,42.65,0,NA,Yes,1
+ustekinumab,https://doi.org/10.1016/j.clinthera.2022.08.010,0.192,2.75,1.88,0.287,0.181,0.782,NA,NA,s.c./i.v.,0,NA,0,NA,ECL,1673,14125,0.481,0.402,0.705,0.793,BW,70,0.161,0.155,NA,F,-0.972,-0.208,NA,NA,x 1.125,NA,No,0
+vedolizumab,https://doi.org/10.1111/apt.13243,0.159,3.19,1.65,0.12,NA,NA,0.964,0.265,i.v.,1,MM,0,"VP_WT, Q_WT",ELISA,2554,18427,0.362,0.467,1,0.75,BW,70,NA,NA,NA,0,-1.18,NA,NA,40,x 1.12,NA,No,0
+vedolizumab,https://doi.org/10.5217/ir.2019.09167,0.165,3.16,1.84,0.161,NA,NA,0.851,0.238,i.v.,1,MM,0,"VP_WT, Q_WT",ECL,1933,16598,0.472,0.466,1,0.75,BW,70,NA,NA,NA,0,-1.19,NA,NA,38,x 1.49,NA,No,0
+vedolizumab,https://doi.org/10.1093/ibd/izab143,0.215,4.92,1.65,0.12,NA,NA,0.964,0.265,i.v.,1,MM,0,"Q, VP, Km, Vm",ELISA,108,737,NA,NA,NA,NA,NA,0,NA,NA,NA,0,-0.02,NA,NA,41,x 1.9,CL_Alb linear,Yes,1
+vedolizumab,https://doi.org/10.1002/prp2.1257,0.148,3.12,3.95,0.5,NA,NA,NA,NA,i.v.,0,NA,0,"VP_WT, Q_WT",ELISA,193,2365,0.713,0.659,1,0.5,BW,75,NA,NA,NA,0,-1.35,NA,NA,40,0,NA,No,0
+</script>
+
 <header>
   <h1>PopPK 농도-시간 프로파일 시뮬레이터</h1>
   <p>데이터 주도 엔진 · mAb 라이브러리(PPKPARAMETER.csv) + curated 상세모델(Eculizumab·Adalimumab, IIV/PD 포함) · Monte-Carlo 변동성</p>
