@@ -128,6 +128,16 @@ function setStatus(msg, ok){ const s=document.getElementById('status'); s.textCo
 function num(x){ if(x==null) return null; const s=String(x).trim(); if(s===''||s.toUpperCase()==='NA') return null; const v=parseFloat(s); return isNaN(v)?null:v; }
 function shortRef(u){ if(!u) return 'ref'; const parts=String(u).split('doi.org/'); return (parts[1]||u).replace(/^https?:\/\//,'').slice(0,30); }
 
+// 파라미터명을 논문 표 구획으로 분류: θ(구조) / η(IIV) / cov(공변량) / other(오차·PD 등)
+function classifyParam(name){
+  const n=String(name).toLowerCase();
+  if(n.startsWith('iiv') || n.includes('corr') || n.startsWith('omega') || n.includes('iov')) return 'eta';
+  if(n.includes('_wt') || n.includes('wt_') || n.includes('sx_') || n.includes('sex') || n.includes('_alb') || n.includes('alb_') || n.includes('_ada')) return 'cov';
+  if(n.startsWith('prop') || n.startsWith('add') || n.includes('error') || n.includes('sigma')) return 'other';
+  if(['kin','kout','c50','ic50','das28_0','imax','emax'].includes(n)) return 'other';
+  return 'theta';
+}
+
 // ---------- curated 상세 모델 정의 (공변량 구조는 약물 특이적이라 여기 명시) ----------
 const CURATED = {
   eculizumab: {
@@ -181,7 +191,7 @@ function ingestCurated(text){
       structure:C.structure, note:C.note, nonlin:false, N:null,
       iiv:C.iiv, corr:C.corr, defaults:C.defaults, covMeta:C.covMeta,
       build:(inp)=>C.build(P, inp),
-      paramRows:()=>Object.keys(PARAMS[drug]).map(k=>[k, PARAMS[drug][k].estimate, 'RSE '+(PARAMS[drug][k].rse==null?'–':PARAMS[drug][k].rse)+'%'])
+      paramRows:()=>Object.keys(PARAMS[drug]).map(k=>[k, PARAMS[drug][k].estimate, 'RSE '+(PARAMS[drug][k].rse==null?'–':PARAMS[drug][k].rse)+'%', classifyParam(k)])
     });
   });
 }
@@ -240,17 +250,20 @@ function ingestLibrary(text){
                  ka:base.ka, F:(base.F!=null?base.F:1) };
       },
       paramRows(){
-        const rows=[['CL (L/day)',base.CL,''],['Vc (L)',base.Vc,'']];
-        if(base.Vp!=null) rows.push(['Vp (L)',base.Vp,'']);
-        if(base.Q!=null) rows.push(['Q (L/day)',base.Q,'']);
-        if(base.ka!=null) rows.push(['ka (1/day)',base.ka,'']);
-        if(base.F!=null) rows.push(['F',base.F,'']);
-        if(base.Km!=null) rows.push(['Km',base.Km,'MM']);
-        if(base.Vm!=null) rows.push(['Vm',base.Vm,'MM']);
-        if(cov.CL_WT!=null) rows.push(['CL_WT exp',cov.CL_WT,cov.sizeDesc]);
-        if(cov.VC_WT!=null) rows.push(['VC_WT exp',cov.VC_WT,cov.sizeDesc]);
-        if(cov.refSize!=null) rows.push(['Ref size',cov.refSize,cov.sizeDesc]);
-        if(this.N!=null) rows.push(['N (subjects)',this.N,'']);
+        const rows=[['CL (L/day)',base.CL,'','theta'],['Vc (L)',base.Vc,'','theta']];
+        if(base.Vp!=null) rows.push(['Vp (L)',base.Vp,'','theta']);
+        if(base.Q!=null) rows.push(['Q (L/day)',base.Q,'','theta']);
+        if(base.ka!=null) rows.push(['ka (1/day)',base.ka,'','theta']);
+        if(base.F!=null) rows.push(['F',base.F,'','theta']);
+        if(base.Km!=null) rows.push(['Km (mg/L)',base.Km,'MM','theta']);
+        if(base.Vm!=null) rows.push(['Vm',base.Vm,'MM','theta']);
+        if(cov.CL_WT!=null) rows.push(['CL_WT exp',cov.CL_WT,cov.sizeDesc,'cov']);
+        if(cov.VC_WT!=null) rows.push(['VC_WT exp',cov.VC_WT,cov.sizeDesc,'cov']);
+        if(cov.VP_WT!=null) rows.push(['VP_WT exp',cov.VP_WT,cov.sizeDesc,'cov']);
+        if(cov.CL_SEX!=null) rows.push(['CL_SEX',cov.CL_SEX,'sex='+cov.sexDir,'cov']);
+        if(cov.CL_ALB!=null) rows.push(['CL_ALB exp',cov.CL_ALB,'ref '+cov.refAlb,'cov']);
+        if(cov.refSize!=null) rows.push(['Ref size',cov.refSize,cov.sizeDesc,'cov']);
+        if(this.N!=null) rows.push(['N (subjects)',this.N,'','other']);
         return rows;
       }
     });
@@ -322,10 +335,29 @@ function onModelChange(){
   buildCovUI(M);
   // 파라미터 테이블
   const tb=document.getElementById('paramTable'); tb.innerHTML='';
-  M.paramRows().forEach(([k,v,note])=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${k}</td><td>${v==null?'–':v}</td><td style="color:#94a3b8">${note||''}</td>`;
-    tb.appendChild(tr);
+  const rows=M.paramRows();
+  const groups=[['theta','θ 구조 파라미터 (structural)'],['eta','η 개체간 변동 (IIV)'],['cov','공변량 (covariate)'],['other','기타 (오차·PD 등)']];
+  groups.forEach(([g,title])=>{
+    const gr=rows.filter(r=>(r[3]||'theta')===g);
+    if(!gr.length){
+      if(g==='eta' && M.source==='library'){   // 라이브러리는 published η 없음
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td colspan="3" style="color:var(--accent);font-weight:600;font-size:11px;padding-top:10px;border-bottom:1px solid var(--border)">η 개체간 변동 (IIV)</td>`;
+        tb.appendChild(tr);
+        const tr2=document.createElement('tr');
+        tr2.innerHTML=`<td colspan="3" style="color:#64748b;font-size:11px">published 없음 → 가정 %CV 사용</td>`;
+        tb.appendChild(tr2);
+      }
+      return;
+    }
+    const htr=document.createElement('tr');
+    htr.innerHTML=`<td colspan="3" style="color:var(--accent);font-weight:600;font-size:11px;padding-top:10px;border-bottom:1px solid var(--border)">${title}</td>`;
+    tb.appendChild(htr);
+    gr.forEach(([k,v,note])=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${k}</td><td>${v==null?'–':v}</td><td style="color:#94a3b8">${note||''}</td>`;
+      tb.appendChild(tr);
+    });
   });
 }
 
