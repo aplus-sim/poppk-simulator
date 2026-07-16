@@ -566,15 +566,40 @@ function omega(cvPct){ if(cvPct==null||isNaN(cvPct)) return 0; const cv=cvPct/10
 
 // ---------- 범용 ODE 시뮬 (RK4) : 1/2구획 × IV/흡수 ----------
 // 상태 y = [depot, central, periph]
-function simulate(model, indiv, dosing){
+
+// 이벤트 인식형 시간 격자: 균일 coarse + 투여시점/주입구간 세분(피크 시점 정확 포함).
+// dosing에만 의존 → 모든 개체가 동일 격자 공유(밴드 계산 정합).
+function buildTimeGrid(dosing){
+  const { tinf, tau, ndose, tend } = dosing;
+  if(!(tend>0)) return [0];
+  const set=new Set();
+  const coarseN=4000, cdt=tend/coarseN;
+  for(let i=0;i<=coarseN;i++) set.add(i*cdt);
+  for(let i=0;i<ndose;i++){
+    const t0=i*tau; if(t0>tend) break;
+    set.add(t0);                                   // 투여 시점
+    if(tinf>0){                                    // 주입 구간 세분 + 종료(피크) 포함
+      const fineN=40;
+      for(let k=0;k<=fineN;k++){ const tt=t0+tinf*k/fineN; if(tt<=tend) set.add(tt); }
+    }
+  }
+  return [...set].filter(t=>t>=0 && t<=tend+1e-9).sort((a,b)=>a-b);
+}
+
+function simulate(model, indiv, dosing, grid){
   const cmt=model.structure.cmt, absn=model.structure.absorption;
-  const { dose, tinf, tau, ndose, tend } = dosing;
+  const { dose, tinf, tau, ndose } = dosing;
   const CL=indiv.CL, Vc=indiv.Vc, Vp=indiv.Vp, Q=indiv.Q, ka=indiv.ka, F=(indiv.F!=null?indiv.F:1);
-  const dt=Math.max(tend/4000,1e-6), nt=Math.floor(tend/dt)+1;
   const k10=CL/Vc, k12=(cmt===2&&Q!=null&&Vc)?Q/Vc:0, k21=(cmt===2&&Q!=null&&Vp)?Q/Vp:0;
   const infuse=(!absn && tinf>0);
   const useMM=(model.Km!=null && model.Vm!=null), Km=model.Km, Vm=model.Vm;  // Michaelis-Menten 포화 소실
-  function rateAt(t){ if(!infuse) return 0; let r=0; for(let i=0;i<ndose;i++){const t0=i*tau; if(t>=t0&&t<t0+tinf) r+=dose/tinf;} return r; }
+  // 스텝 [t, t+h]와 주입창의 겹침으로 평균 주입속도 산출 → 불연속 경계에서도 질량 정확 보존
+  function rateOverStep(t, h){
+    if(!infuse || h<=0) return 0;
+    let overlap=0;
+    for(let i=0;i<ndose;i++){ const a=i*tau, b=a+tinf; const lo=Math.max(t,a), hi=Math.min(t+h,b); if(hi>lo) overlap+=(hi-lo); }
+    return (overlap/h)*(dose/tinf);
+  }
   const deriv=(t,y,rate)=>{
     const dDepot = absn ? -ka*y[0] : 0;
     const inflow = absn ? ka*y[0] : rate;
@@ -584,24 +609,28 @@ function simulate(model, indiv, dosing){
     const dP = (cmt===2) ? (k12*y[1]-k21*y[2]) : 0;
     return [dDepot,dC,dP];
   };
+  const times = grid || buildTimeGrid(dosing);
+  const nt=times.length, conc=new Array(nt);
   let y=[0,0,0];
   const bolus=[]; for(let i=0;i<ndose;i++) bolus.push(i*tau); let bi=0;
-  const times=new Array(nt), conc=new Array(nt);
   for(let i=0;i<nt;i++){
-    const t=i*dt;
-    while(bi<bolus.length && t>=bolus[bi]-1e-9){
+    const t=times[i];
+    while(bi<bolus.length && t>=bolus[bi]-1e-9){    // 투여 시점에 depot/central bolus 주입
       if(absn) y[0]+=dose*F; else if(!infuse) y[1]+=dose;
       bi++;
     }
-    times[i]=t; conc[i]=y[1]/Vc;
-    const r=rateAt(t);
-    const k1=deriv(t,y,r);
-    const k2=deriv(t+dt/2,[y[0]+dt/2*k1[0],y[1]+dt/2*k1[1],y[2]+dt/2*k1[2]],rateAt(t+dt/2));
-    const k3=deriv(t+dt/2,[y[0]+dt/2*k2[0],y[1]+dt/2*k2[1],y[2]+dt/2*k2[2]],rateAt(t+dt/2));
-    const k4=deriv(t+dt,[y[0]+dt*k3[0],y[1]+dt*k3[1],y[2]+dt*k3[2]],rateAt(t+dt));
-    y=[y[0]+dt/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]),
-       y[1]+dt/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]),
-       y[2]+dt/6*(k1[2]+2*k2[2]+2*k3[2]+k4[2])];
+    conc[i]=y[1]/Vc;                                // bolus/주입종료가 격자점이라 피크 정확히 기록
+    if(i<nt-1){
+      const h=times[i+1]-times[i];
+      const rs=rateOverStep(t,h);                   // 스텝 전체에 일정한 평균 주입속도 사용
+      const k1=deriv(t,y,rs);
+      const k2=deriv(t+h/2,[y[0]+h/2*k1[0],y[1]+h/2*k1[1],y[2]+h/2*k1[2]],rs);
+      const k3=deriv(t+h/2,[y[0]+h/2*k2[0],y[1]+h/2*k2[1],y[2]+h/2*k2[2]],rs);
+      const k4=deriv(t+h,[y[0]+h*k3[0],y[1]+h*k3[1],y[2]+h*k3[2]],rs);
+      y=[y[0]+h/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]),
+         y[1]+h/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]),
+         y[2]+h/6*(k1[2]+2*k2[2]+2*k3[2]+k4[2])];
+    }
   }
   return {times, conc};
 }
@@ -699,8 +728,9 @@ function run(){
   const assumedCV=parseFloat(document.getElementById('assumedcv').value);
   const P = M.source==='curated' ? (()=>{const o={};for(const k in PARAMS[document.getElementById('drug').value])o[k]=PARAMS[document.getElementById('drug').value][k].estimate;return o;})() : {};
 
+  const grid=buildTimeGrid(dosing);   // 이벤트 인식형 격자를 1회 생성해 모든 개체가 공유
   const typ=M.build(cov);
-  const base=simulate(M, typ, dosing);
+  const base=simulate(M, typ, dosing, grid);
   const nt=base.times.length;
 
   const times=base.times;
@@ -709,7 +739,7 @@ function run(){
     const all=Array.from({length:nt},()=>[]);
     for(let s=0;s<N;s++){
       const indiv=sampleIndiv(M, typ, P, assumedCV);
-      const r=simulate(M, indiv, dosing);
+      const r=simulate(M, indiv, dosing, grid);
       for(let i=0;i<nt;i++) all[i].push(r.conc[i]);
     }
     const med=new Array(nt), p5=new Array(nt), p95=new Array(nt);
