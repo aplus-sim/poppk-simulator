@@ -107,6 +107,7 @@
   <div class="panel plotwrap">
     <div id="plot" style="width:100%;height:600px;"></div>
     <div id="metrics"></div>
+    <div id="plotNote" style="font-size:11.5px;color:var(--muted);margin-top:8px;"></div>
   </div>
 </div>
 
@@ -212,12 +213,19 @@ function ingestLibrary(text){
       usesAlb: (cov.CL_ALB!=null||cov.VC_ALB!=null||cov.VP_ALB!=null) && cov.refAlb!=null,
       refAlb:cov.refAlb
     };
+    // 표시용 라벨 — 검증된 가정을 명시:
+    //  · SC(흡수): F값 있는 모델은 전부 Route=s.c./i.v.(IV데이터로 true CL 추정) → dose*F 적용이 옳음
+    //  · MM: 원논문 CL을 "선형 성분"으로 간주하고 MM과 병렬. Km은 mg/L 가정(이상치는 경고).
+    const absLabel = absorption ? `first-order absorption (${route||'SC'}${base.F!=null?`, F=${base.F} 적용`:''})` : 'IV';
+    const mmLabel = hasMM
+      ? ` · 비선형 MM 소실 (선형 CL과 병렬; Km=${base.Km}${(base.Km>100)?' ⚠단위확인':''} mg/L, Vm=${base.Vm})`
+      : (nonlin ? ' · 비선형 플래그(MM 파라미터 없음 → 선형근사)' : '');
     addModel({
       drug, source:'library', ref:shortRef(r.Reference), refUrl:(r.Reference||'').trim(),
       timeUnit:'day', timeLabel:'day', concUnit:'mg/L',
       structure:{ cmt, absorption }, route, nonlin, hasMM, N:num(r.N),
       Km:base.Km, Vm:base.Vm, iiv:null, corr:null, cov, covMeta,
-      note:`${cmt}-compartment · ${absorption?'first-order absorption ('+(route||'SC')+')':'IV'}${hasMM?` · 비선형 MM 소실 적용 (Km=${base.Km}, Vm=${base.Vm})`:(nonlin?' · 비선형 플래그(MM 파라미터 없음 → 선형근사)':'')} · 단위 L/day. Ref: ${(r.Reference||'').trim()}`,
+      note:`${cmt}-compartment · ${absLabel}${mmLabel} · 단위 L/day. Ref: ${(r.Reference||'').trim()}`,
       defaults:{ dose:300, tinf:0, tau:21, ndose:4, tend:126, wt:(cov.refSize||70) },
       build(inp){
         const wt=inp.wt, sex=inp.sex||0, alb=inp.alb;
@@ -547,7 +555,7 @@ function run(){
       med[i]=percentile(col,0.5); p5[i]=percentile(col,0.05); p95[i]=percentile(col,0.95); }
     traces=[
       {x:times.concat(times.slice().reverse()), y:p95.concat(p5.slice().reverse()),
-       fill:'toself', fillcolor:'rgba(56,189,248,0.18)', line:{width:0}, name:'5–95% 밴드', hoverinfo:'skip'},
+       fill:'toself', fillcolor:'rgba(56,189,248,0.18)', line:{width:0}, name:'5–95% 밴드 (개체간 변동 IIV)', hoverinfo:'skip'},
       {x:times, y:med, mode:'lines', line:{color:'#38bdf8',width:2.5}, name:'중앙값 (median)'},
       {x:times, y:base.conc, mode:'lines', line:{color:'#f59e0b',width:1.5,dash:'dot'}, name:'Typical (point est.)'}
     ];
@@ -567,6 +575,9 @@ function run(){
   }, {responsive:true});
 
   renderMetrics(M, computeMetrics(times, base.conc, dosing));
+  document.getElementById('plotNote').innerHTML = useMC
+    ? '밴드 = <b>개체간 변동(IIV)</b>만 반영 (log-normal). 잔차·분석오차(관측농도 산포)는 <b>미포함</b> — 관측치 산점도와 직접 비교 시 주의.'
+    : '';
 
   const src = M.source==='curated' ? 'IIV(published)' : `가정 IIV ${assumedCV}%CV`;
   setStatus(`완료 · N=${N} · 시점 ${nt}개 · ${useMC?src:'point est.'}`, true);
