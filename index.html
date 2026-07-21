@@ -47,6 +47,7 @@
   .mval span { font-size:11px; color:var(--muted); font-weight:400; }
   .mnote { font-size:11px; color:var(--muted); margin-top:8px; }
   .mtitle { font-size:12px; color:var(--accent); margin-top:14px; font-weight:600; }
+  input.ph { border-color:#a16207 !important; background:#2a2110; }   /* 예시(placeholder)값 */
 </style>
 </head>
 <body>
@@ -63,6 +64,8 @@
     <input type="file" id="libFile" accept=".csv">
     <label>curated 상세 파라미터(extracted_poppk_params.csv) 직접 선택</label>
     <input type="file" id="csvFile" accept=".csv">
+    <label>승인 용법(regimen.csv) 직접 선택</label>
+    <input type="file" id="regFile" accept=".csv">
 
     <h3 style="margin-top:18px;">2. 약물 / 모델</h3>
     <label>약물</label>
@@ -72,6 +75,7 @@
     <div id="modelDesc" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
 
     <h3 style="margin-top:18px;">3. 투여 설정</h3>
+    <div id="doseSource" style="font-size:11.5px;margin:2px 0 6px;"></div>
     <div class="row">
       <div><label>1회 용량 (mg)</label><input type="number" id="dose" value="900" step="any"></div>
       <div><label id="ivLabel">주입시간 (h)</label><input type="number" id="tinf" value="0.5" step="any"></div>
@@ -121,6 +125,7 @@
 
 let DRUGS = {};        // DRUGS[drugName] = [modelObj, ...]
 let PARAMS = {};       // curated 원본 파라미터 (PARAMS[drug][key] = {estimate,rse,description})
+let REGIMEN = {};      // REGIMEN[drug] = {dose_mg, interval_day, route, infusion_h, indication} (승인 용법)
 let CURRENT = null;    // 현재 선택된 모델 객체
 let lastResult = null;
 
@@ -270,6 +275,17 @@ function ingestLibrary(text){
   });
 }
 
+// ---------- 승인 용법(regimen.csv) 파싱: 약물별 대표 용법 ----------
+function ingestRegimen(text){
+  const parsed = Papa.parse(text.trim(), {header:true, skipEmptyLines:true});
+  REGIMEN = {};
+  parsed.data.forEach(r=>{
+    const d=(r.mAb||'').trim().toLowerCase(); if(!d) return;
+    REGIMEN[d] = { dose_mg:num(r.dose_mg), interval_day:num(r.interval_day),
+                   route:(r.route||'').trim(), infusion_h:num(r.infusion_h), indication:(r.indication||'').trim() };
+  });
+}
+
 function addModel(m){ (DRUGS[m.drug]=DRUGS[m.drug]||[]).push(m); }
 
 // ---------- 드롭다운 구성 ----------
@@ -320,18 +336,39 @@ function onModelChange(){
   const u=M.timeUnit;
   document.getElementById('intervalLabel').textContent='투여 간격 ('+u+')';
   document.getElementById('simEndLabel').textContent='시뮬레이션 종료 ('+u+')';
-  document.getElementById('ivLabel').textContent = M.structure.absorption ? '주입시간 (미사용)' : '주입시간 ('+u+')';
+  document.getElementById('ivLabel').textContent = M.structure.absorption ? '주입시간 (미사용)' : '주입시간 (h)';  // 주입시간은 항상 시간 단위
   // 가정 CV 입력 활성화 여부
   const cvIn=document.getElementById('assumedcv');
   cvIn.disabled = (M.iiv!=null);
   document.getElementById('cvLabel').textContent = M.iiv ? '가정 IIV %CV (미사용·published IIV 있음)' : '가정 IIV %CV (라이브러리 전용)';
-  // 기본값 적용
+  // 기본값 적용 (라이브러리는 승인 용법 있으면 그것으로 교체)
   const d=M.defaults;
-  document.getElementById('dose').value=d.dose;
-  document.getElementById('tinf').value=d.tinf;
-  document.getElementById('tau').value=d.tau;
-  document.getElementById('ndose').value=d.ndose;
-  document.getElementById('tend').value=d.tend;
+  let dose=d.dose, tinf=d.tinf, tau=d.tau, ndose=d.ndose, tend=d.tend;
+  let phDose=false, phTau=false, phTinf=false;   // 예시(데이터 없음)로 채운 값 여부
+  const reg = (M.source==='library') ? REGIMEN[drug] : null;
+  const dsEl=document.getElementById('doseSource');
+  if(reg && reg.dose_mg!=null && reg.interval_day!=null){
+    dose = reg.dose_mg;                                              // 실측 승인 용량
+    tau  = reg.interval_day;                                         // 실측 간격 (day)
+    if(M.structure.absorption){ tinf=0; }                           // SC: 주입 없음(정상)
+    else if(reg.infusion_h!=null && reg.infusion_h>0){ tinf=reg.infusion_h; }  // 실측 주입시간(h)
+    else { tinf=0.5; phTinf=true; }                                 // IV인데 주입시간 데이터 없음 → 예시
+    tend = Math.max(tau*(ndose+2), tau*6);
+    dsEl.innerHTML = `<span style="color:#4ade80">✓ 승인 용법 적용</span> · ${reg.dose_mg}mg q${reg.interval_day}day ${reg.route||''}`
+      + (reg.indication?` · <span style="color:#94a3b8">${reg.indication}</span>`:'');
+  } else if(M.source==='library'){
+    phDose=true; phTau=true; phTinf=!M.structure.absorption;        // 용량·간격 데이터 없음(SC면 주입 0이 정상)
+    dsEl.innerHTML = '<span style="color:#fbbf24">⚠ 승인 용법 데이터 없음</span> '
+      + '<span style="color:#94a3b8">— 용량·간격을 예시값으로 채움(주황 표시). 실제 용법으로 조정하세요.</span>';
+  } else {
+    dsEl.innerHTML = '';   // curated: 모델 고유 기본값
+  }
+  document.getElementById('dose').value=dose;
+  document.getElementById('tinf').value=tinf;
+  document.getElementById('tau').value=tau;
+  document.getElementById('ndose').value=ndose;
+  document.getElementById('tend').value=tend;
+  markPH('dose',phDose); markPH('tau',phTau); markPH('tinf',phTinf);   // 예시값 필드 주황 표시
   buildCovUI(M);
   // 파라미터 테이블
   const tb=document.getElementById('paramTable'); tb.innerHTML='';
@@ -359,6 +396,13 @@ function onModelChange(){
       tb.appendChild(tr);
     });
   });
+}
+
+// 예시(placeholder)로 채운 입력칸을 시각 표시 (값은 유지, 데이터 없음을 명시)
+function markPH(id, on){
+  const el=document.getElementById(id); if(!el) return;
+  el.classList.toggle('ph', on);
+  el.title = on ? '⚠ 기존(승인) 데이터 없음 → 예시값으로 채움. 실제 값으로 조정하세요.' : '';
 }
 
 // ---------- 공변량 입력칸을 모델별로 동적 생성 ----------
@@ -556,9 +600,10 @@ function run(){
     sex: covEl('cov_sex') ? parseInt(covEl('cov_sex').value) : 0,
     alb: covEl('cov_alb') ? parseFloat(covEl('cov_alb').value) : null
   };
+  const tinfH = parseFloat(document.getElementById('tinf').value);   // 입력은 시간(h)
   const dosing={
     dose:parseFloat(document.getElementById('dose').value),
-    tinf:parseFloat(document.getElementById('tinf').value),
+    tinf: (M.timeUnit==='day' ? tinfH/24 : tinfH),                   // 모델 시간단위로 변환
     tau:parseFloat(document.getElementById('tau').value),
     ndose:parseInt(document.getElementById('ndose').value),
     tend:parseFloat(document.getElementById('tend').value)
@@ -640,6 +685,10 @@ document.getElementById('csvFile').addEventListener('change', e=>{
   const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
   rd.onload=()=>{ ingestCurated(rd.result); populateDrugs(); }; rd.readAsText(f);
 });
+document.getElementById('regFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ ingestRegimen(rd.result); if(CURRENT) onModelChange(); }; rd.readAsText(f);
+});
 
 // 검증용 디버그 훅 (콘솔에서 MM on/off 비교 가능)
 window.__PK = { simulate, get DRUGS(){ return DRUGS; } };
@@ -649,17 +698,20 @@ window.__PK = { simulate, get DRUGS(){ return DRUGS; } };
 (function boot(){
   const embCur=document.getElementById('data-curated');
   const embLib=document.getElementById('data-library');
+  const embReg=document.getElementById('data-regimen');
   const hasEmbed=(embCur&&embCur.textContent.trim()) || (embLib&&embLib.textContent.trim());
   if(hasEmbed){
     try{
       if(embCur&&embCur.textContent.trim()) ingestCurated(embCur.textContent);
       if(embLib&&embLib.textContent.trim()) ingestLibrary(embLib.textContent);
+      if(embReg&&embReg.textContent.trim()) ingestRegimen(embReg.textContent);
       if(Object.keys(DRUGS).length){ populateDrugs(); return; }
     }catch(err){ setStatus('내장 데이터 파싱 오류: '+err.message); return; }
   }
   Promise.allSettled([
     fetch('extracted_poppk_params.csv').then(r=>{ if(!r.ok) throw 0; return r.text(); }).then(t=>ingestCurated(t)),
-    fetch('PPKPARAMETER.csv').then(r=>{ if(!r.ok) throw 0; return r.text(); }).then(t=>ingestLibrary(t))
+    fetch('PPKPARAMETER.csv').then(r=>{ if(!r.ok) throw 0; return r.text(); }).then(t=>ingestLibrary(t)),
+    fetch('regimen.csv').then(r=>{ if(!r.ok) throw 0; return r.text(); }).then(t=>ingestRegimen(t))
   ]).then(()=>{
     if(Object.keys(DRUGS).length){ populateDrugs(); }
     else setStatus('자동 로드 실패(file:// 제한). 위에서 CSV를 직접 선택하거나 단일파일 버전을 사용하세요.');

@@ -15,6 +15,7 @@ OUT = "PopPK_simulator_standalone.html"
 CSVS = [
     ("data-curated", "extracted_poppk_params.csv"),
     ("data-library", "PPKPARAMETER.csv"),
+    ("data-regimen", "regimen.csv"),
 ]
 
 def main():

@@ -1,0 +1,67 @@
+mAb,dose_mg,interval_day,route,infusion_h,indication,n_regimens
+aducanumab,650.0,28.0,IV,1.0,Alzheimer's disease,1
+alirocumab,75.0,14.0,SC,0.0,"reduce low-density lipoprotein
+cholester",3
+amivantamab,1050.0,14.0,IV,2.0,locally advanced or metastatic non-small,4
+anifrolumab,300.0,28.0,IV,0.5,"moderate to severe systemic lupus
+erythe",1
+atezolizumab,840.0,14.0,IV,1.0,Stage II to IIIA Non-Small Cell Lung Can,3
+avelumab,800.0,14.0,IV,1.0,metastatic Merkel Cell Carcinoma (MCC),1
+basiliximab,20.0,4.0,IV,0.417,"prophylaxes of
+acute organ re)echon in",1
+belimumab,200.0,7.0,SC,0.0,Active systemic lupus erythematosus (SLE,2
+benralizumab,30.0,28.0,SC,0.0,"eosinophilic granulomatosis with
+polyang",2
+bevacizumab,975.0,21.0,IV,1.0,"Unresectable, locally advanced, recurren",4
+brodalumab,210.0,14.0,SC,0.0,Plaque Psoriasis,1
+canakinumab,260.0,28.0,SC,0.0,Tumor Necrosis Factor Receptor Associate,7
+cemiplimab,350.0,21.0,IV,0.5,metastatic cutaneous squamous cell carci,2
+cetuximab,250.0,7.0,IV,1.0,Squamous Cell Carcinoma of the Head and,2
+daratumumab,1040.0,28.0,IV,0.0,newly diganosed multiple myeloma ineligi,3
+denosumab,60.0,168.0,SC,0.0,Osteoporosis at High Risk for Fracture,1
+dostarlimab,1000.0,42.0,IV,0.5,adult patients with primary advanced or,2
+dupilumab,300.0,14.0,SC,0.0,Atopic Dermatitis,2
+durvalumab,1500.0,28.0,IV,1.0,resectable (tumors >= 4 cm and/or node po,7
+eculizumab,1200.0,14.0,IV,0.583,atypical Hemolytic Uremic Syndrome (aHUS,2
+elotuzumab,650.0,14.0,IV,0.0,multiple myeloma who have received one t,2
+erenumab,70.0,28.0,SC,0.0,Migraine,1
+golimumab,50.0,28.0,SC,0.0,Rheumatoid Arthritis,2
+guselkumab,100.0,56.0,SC,0.0,Plaque Psoriasis,2
+inebilizumab,300.0,168.0,IV,1.5,Neuromyelitis Optica Spectrum Disorder (,1
+infliximab,390.0,56.0,IV,2.0,Psoriatic Arthritis,4
+ipilimumab,65.0,42.0,IV,0.5,Non-Small Cell Lung Cancer (NSCLC),3
+isatuximab,650.0,14.0,IV,3.25,multiple myeloma,2
+margetuximab,975.0,21.0,IV,0.5,metastatic HER2-positive breast cancer,1
+mepolizumab,100.0,28.0,SC,0.0,severe asthma and with an eosinophilic p,2
+mirikizumab,200.0,28.0,IV,0.5,ulcerative colitis,2
+mogamulizumab,65.0,14.0,IV,1.0,mycosis fungoides,1
+mosunetuzumab,30.0,21.0,IV,2.0,Follicular Lymphoma,1
+natalizumab,300.0,28.0,IV,1.0,Multiple Sclerosis (MS),1
+necitumumab,800.0,7.0,IV,1.0,Squamous Non-Small Cell Lung Cancer (NSC,1
+nimotuzumab,200.0,7.0,IV,0.0,Advanced head and neck tumors,2
+nivolumab,240.0,14.0,IV,0.5,unresectable or metastatic melanoma,4
+obinutuzumab,1000.0,56.0,IV,1.5,previously untreated FL Follicular Lymph,3
+ocrelizumab,600.0,168.0,IV,0.0,Relapsing forms of multiple sclerosis (R,1
+ofatumumab,1000.0,28.0,IV,0.0,Previously Untreated CLL,4
+olaratumab,975.0,7.0,IV,1.0,soft tissue sarcoma (STS),1
+panitumumab,390.0,14.0,IV,1.0,Adult patients with wild-type RAS (defin,1
+pembrolizumab,200.0,21.0,IV,0.5,unresectable or metastatic melanoma,3
+pertuzumab,420.0,21.0,IV,1.0,HER2-positive metastatic breast cancer (,1
+ramucirumab,520.0,14.0,IV,0.0,Gastric Cancer,3
+relatlimab,160.0,28.0,IV,0.5,Melanoma,1
+reslizumab,195.0,28.0,IV,0.0,Severe Asthma with Eosinophilic Phenotyp,1
+risankizumab,150.0,84.0,SC,0.0,Plaque Psoriasis,1
+rituximab,500.0,168.0,IV,0.0,GPA and MPA (Follow up Treatment),2
+secukinumab,150.0,28.0,SC,0.0,Psoriatic Arthritis,5
+siltuximab,715.0,21.0,IV,1.0,Castleman's Disease (MCD),1
+sutimlimab,6500.0,14.0,IV,0.0,Cold Agglutinin Disease (CAD),2
+teclistamab,97.5,7.0,SC,0.0,Multiple Myeloma,1
+teprotumumab,1300.0,21.0,IV,1.0,Thyroid Eye Disease,1
+tezepelumab,210.0,28.0,SC,0.0,Severe Asthma,1
+tocilizumab,162.0,7.0,SC,0.0,Rheumatoid Arthritis (RA),3
+toripalimab,195.0,14.0,IV,1.0,recurrent unresectable or metastatic nas,2
+tralokinumab,300.0,14.0,SC,0.0,Atopic Dermatitis,1
+trastuzumab,390.0,21.0,IV,1.0,HER2-overexpressing breast cancer,2
+tremelimumab,65.0,21.0,IV,1.0,Non-Small Cell Lung Cancer (NSCLC),2
+ustekinumab,45.0,84.0,SC,0.0,Plaque Psoriasis,3
+vedolizumab,108.0,14.0,SC,0.0,Crohn's disease,2
