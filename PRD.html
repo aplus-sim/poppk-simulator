@@ -36,7 +36,9 @@ a{color:var(--accent)}
 <body>
 <div class="wrap">
 <h1>PRD — PopPK Profile Simulator</h1>
-<table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>제품명</td><td>PopPK Profile Simulator (항체약물 농도-시간 프로파일 시뮬레이터)</td></tr><tr><td>버전</td><td>v2 (2026-07 개편)</td></tr><tr><td>위치</td><td><code>Agent_APLUS_SJ/simulator/</code></td></tr><tr><td>배포</td><td>Vercel — GitHub <code>aplus-sim/poppk-simulator</code> (push 시 자동 배포)</td></tr><tr><td>오프라인</td><td><code>PopPK_simulator_standalone.html</code> (더블클릭 실행)</td></tr><tr><td>상태</td><td>운영 중</td></tr></tbody></table>
+<table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>제품명</td><td>PopPK Profile Simulator (항체약물 농도-시간 프로파일 시뮬레이터)</td></tr><tr><td>버전</td><td>v2 (2026-07 개편)</td></tr><tr><td><strong>코드 저장소</strong></td><td><strong>https://github.com/aplus-sim/poppk-simulator</strong></td></tr><tr><td>배포</td><td>Vercel (저장소 push 시 자동 배포)</td></tr><tr><td>오프라인 실행</td><td><code>PopPK_simulator_standalone.html</code> (더블클릭)</td></tr><tr><td>로컬 작업 경로</td><td><code>Agent_APLUS_SJ/simulator/</code></td></tr><tr><td>상태</td><td>운영 중</td></tr></tbody></table>
+<h3>코드 바로가기</h3>
+<table><thead><tr><th>용도</th><th>링크</th></tr></thead><tbody><tr><td>저장소 전체</td><td>https://github.com/aplus-sim/poppk-simulator</td></tr><tr><td>앱 코드 보기 (<code>index.html</code>, 763줄)</td><td>https://github.com/aplus-sim/poppk-simulator/blob/main/index.html</td></tr><tr><td>원본 다운로드</td><td>https://raw.githubusercontent.com/aplus-sim/poppk-simulator/main/index.html</td></tr><tr><td>전체 ZIP 내려받기</td><td>https://github.com/aplus-sim/poppk-simulator/archive/refs/heads/main.zip</td></tr></tbody></table>
 <hr>
 <h2>1. 개요 (Overview)</h2>
 <p>PopPK(모집단 약동학) 파라미터를 입력으로, <strong>항체약물(mAb)의 농도-시간 프로파일과 환자 간 변동성</strong>을 브라우저에서 즉시 시뮬레이션하는 <strong>단일 HTML 웹앱</strong>. 설치·서버·로그인 없이 실행된다.</p>
@@ -101,6 +103,9 @@ a{color:var(--accent)}
 ├── PRD.md                           본 문서
 └── 개선점_트래커.md                 개선 이력·시행착오</code></pre>
 <pre><code>index.html 수정 → python build_standalone.py → git push → Vercel 자동 배포</code></pre>
+<h3>index.html 내부 구조 (앱 전체가 단일 파일)</h3>
+<table><thead><tr><th>위치</th><th>내용</th></tr></thead><tbody><tr><td>~1–117줄</td><td>HTML / CSS (화면 레이아웃·스타일)</td></tr><tr><td>119줄~</td><td>시뮬레이션 엔진 (JS)</td></tr><tr><td>├ 데이터 파서</td><td>CSV → 모델 구조 자동 판별(구획수·흡수·비선형·공변량)</td></tr><tr><td>├ <code>buildTimeGrid()</code></td><td>이벤트 인식형 시간 격자(투여·주입 종료 시점 포함)</td></tr><tr><td>├ <code>simulate()</code> (514줄)</td><td>가변스텝 RK4 ODE — 1/2구획 × IV/SC × 선형/MM</td></tr><tr><td>├ <code>sampleIndiv()</code></td><td>IIV log-normal 개체 샘플링</td></tr><tr><td>├ <code>computeMetrics()</code></td><td>Cmax·Ctrough·AUC·말기 반감기</td></tr><tr><td>└ <code>run()</code> (635줄)</td><td>Monte-Carlo 실행 → 밴드·지표·플롯</td></tr></tbody></table>
+<blockquote>외부 의존성은 CDN의 Plotly(그래프)·PapaParse(CSV 파싱) 두 개뿐이며, 빌드 과정이 없다.</blockquote>
 </div>
 </body>
 </html>

@@ -4,10 +4,20 @@
 |---|---|
 | 제품명 | PopPK Profile Simulator (항체약물 농도-시간 프로파일 시뮬레이터) |
 | 버전 | v2 (2026-07 개편) |
-| 위치 | `Agent_APLUS_SJ/simulator/` |
-| 배포 | Vercel — GitHub `aplus-sim/poppk-simulator` (push 시 자동 배포) |
-| 오프라인 | `PopPK_simulator_standalone.html` (더블클릭 실행) |
+| **코드 저장소** | **https://github.com/aplus-sim/poppk-simulator** |
+| 배포 | Vercel (저장소 push 시 자동 배포) |
+| 오프라인 실행 | `PopPK_simulator_standalone.html` (더블클릭) |
+| 로컬 작업 경로 | `Agent_APLUS_SJ/simulator/` |
 | 상태 | 운영 중 |
+
+### 코드 바로가기
+
+| 용도 | 링크 |
+|---|---|
+| 저장소 전체 | https://github.com/aplus-sim/poppk-simulator |
+| 앱 코드 보기 (`index.html`, 763줄) | https://github.com/aplus-sim/poppk-simulator/blob/main/index.html |
+| 원본 다운로드 | https://raw.githubusercontent.com/aplus-sim/poppk-simulator/main/index.html |
+| 전체 ZIP 내려받기 | https://github.com/aplus-sim/poppk-simulator/archive/refs/heads/main.zip |
 
 ---
 
@@ -190,3 +200,18 @@ simulator/
 ```
 index.html 수정 → python build_standalone.py → git push → Vercel 자동 배포
 ```
+
+### index.html 내부 구조 (앱 전체가 단일 파일)
+
+| 위치 | 내용 |
+|---|---|
+| ~1–117줄 | HTML / CSS (화면 레이아웃·스타일) |
+| 119줄~ | 시뮬레이션 엔진 (JS) |
+| ├ 데이터 파서 | CSV → 모델 구조 자동 판별(구획수·흡수·비선형·공변량) |
+| ├ `buildTimeGrid()` | 이벤트 인식형 시간 격자(투여·주입 종료 시점 포함) |
+| ├ `simulate()` (514줄) | 가변스텝 RK4 ODE — 1/2구획 × IV/SC × 선형/MM |
+| ├ `sampleIndiv()` | IIV log-normal 개체 샘플링 |
+| ├ `computeMetrics()` | Cmax·Ctrough·AUC·말기 반감기 |
+| └ `run()` (635줄) | Monte-Carlo 실행 → 밴드·지표·플롯 |
+
+> 외부 의존성은 CDN의 Plotly(그래프)·PapaParse(CSV 파싱) 두 개뿐이며, 빌드 과정이 없다.
