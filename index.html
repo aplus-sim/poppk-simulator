@@ -147,6 +147,7 @@ function classifyParam(name){
 const CURATED = {
   eculizumab: {
     label: "Eculizumab — 2-compartment, IV infusion (curated)",
+    refText: "Eculizumab_POPPK.pdf — Table 3",
     timeUnit:"h", timeLabel:"h", concUnit:"mg/L",
     structure:{ cmt:2, absorption:false },
     note:"CL=θ1·(WT/80.9)^θ7 , Vc=θ2·(WT/80.9)^θ8 (healthy). 단위: L/h, L.",
@@ -163,6 +164,7 @@ const CURATED = {
   },
   adalimumab: {
     label: "Adalimumab — 1-compartment, first-order absorption (SC, curated)",
+    refText: "22_Ternant_2014_POPPK.pdf — Table 2",
     timeUnit:"day", timeLabel:"day", concUnit:"mg/L",
     structure:{ cmt:1, absorption:true },
     note:"CL/F = θ·exp(SX_CL·sex)·(WT/70)^WT_CL. 단위: L/day, L. (SC, apparent 값)",
@@ -179,6 +181,7 @@ const CURATED = {
   pembrolizumab: {
     label: "Pembrolizumab (Keytruda) — 2-compartment IV · curated(IIV+cov)",
     brand:"Keytruda",
+    refText: "Keytruda_PK_parameter.csv (사용자 제공)",
     timeUnit:"day", timeLabel:"day", concUnit:"mg/L",
     structure:{ cmt:2, absorption:false },
     note:"CL=0.202·(WGT/76.8)^0.578·(ALB/39.6)^-0.854·[여성 ×0.848]; Vc=3.48·(WGT/76.8)^0.492·(ALB/39.6)^-0.178·[여성 ×0.866]. 단위 L/day. (추가 공변량 BSLD·eGFR·암종·ECOG·IPI는 데이터엔 있으나 앱 미적용)",
@@ -211,10 +214,16 @@ function ingestCurated(text){
     addModel({
       drug, source:'curated', label:C.label, ref:'curated',
       timeUnit:C.timeUnit, timeLabel:C.timeLabel, concUnit:C.concUnit,
-      structure:C.structure, note:C.note, nonlin:false, N:null, brand:C.brand,
+      structure:C.structure, note:C.note, nonlin:false, N:null, brand:C.brand, refText:C.refText,
       iiv:C.iiv, corr:C.corr, defaults:C.defaults, covMeta:C.covMeta,
       build:(inp)=>C.build(P, inp),
-      paramRows:()=>Object.keys(PARAMS[drug]).map(k=>[k, PARAMS[drug][k].estimate, 'RSE '+(PARAMS[drug][k].rse==null?'–':PARAMS[drug][k].rse)+'%', classifyParam(k)])
+      paramRows:()=>Object.keys(PARAMS[drug]).map(k=>{
+        const P0=PARAMS[drug][k], desc=P0.description||'';
+        const m=desc.match(/\(([^)]*)\)/g);                    // description 끝 괄호 = 단위
+        const unit=m ? m[m.length-1].replace(/[()]/g,'').trim() : '';
+        return [ k + (unit?` (${unit})`:''), P0.estimate,
+                 'RSE '+(P0.rse==null?'–':P0.rse)+'%', classifyParam(k) ];
+      })
     });
   });
 }
@@ -251,14 +260,14 @@ function ingestLibrary(text){
     //  · MM: 원논문 CL을 "선형 성분"으로 간주하고 MM과 병렬. Km은 mg/L 가정(이상치는 경고).
     const absLabel = absorption ? `first-order absorption (${route||'SC'}${base.F!=null?`, F=${base.F} 적용`:''})` : 'IV';
     const mmLabel = hasMM
-      ? ` · 비선형 MM 소실 (선형 CL과 병렬; Km=${base.Km}${(base.Km>100)?' ⚠단위확인':''} mg/L, Vm=${base.Vm})`
+      ? ` · 비선형 MM 소실 (선형 CL과 병렬; Km=${base.Km}${(base.Km>100)?' ⚠단위확인':''}, Vm=${base.Vm})`
       : (nonlin ? ' · 비선형 플래그(MM 파라미터 없음 → 선형근사)' : '');
     addModel({
       drug, source:'library', ref:shortRef(r.Reference), refUrl:(r.Reference||'').trim(),
       timeUnit:'day', timeLabel:'day', concUnit:'mg/L',
       structure:{ cmt, absorption }, route, nonlin, hasMM, N:num(r.N),
       Km:base.Km, Vm:base.Vm, iiv:null, corr:null, cov, covMeta,
-      note:`${cmt}-compartment · ${absLabel}${mmLabel} · 단위 L/day. Ref: ${(r.Reference||'').trim()}`,
+      note:`${cmt}-compartment · ${absLabel}${mmLabel} · 시뮬 단위 L/day 가정(원데이터 단위 미표기). Ref: ${(r.Reference||'').trim()}`,
       defaults:{ dose:300, tinf:0, tau:21, ndose:4, tend:126, wt:(cov.refSize||70) },
       build(inp){
         const wt=inp.wt, sex=inp.sex||0, alb=inp.alb;
@@ -273,12 +282,13 @@ function ingestLibrary(text){
                  ka:base.ka, F:(base.F!=null?base.F:1) };
       },
       paramRows(){
-        const rows=[['CL (L/day)',base.CL,'','theta'],['Vc (L)',base.Vc,'','theta']];
-        if(base.Vp!=null) rows.push(['Vp (L)',base.Vp,'','theta']);
-        if(base.Q!=null) rows.push(['Q (L/day)',base.Q,'','theta']);
-        if(base.ka!=null) rows.push(['ka (1/day)',base.ka,'','theta']);
+        // 원데이터(PPKPARAMETER.csv)에 단위 컬럼이 없으므로 단위를 표기하지 않음
+        const rows=[['CL',base.CL,'','theta'],['Vc',base.Vc,'','theta']];
+        if(base.Vp!=null) rows.push(['Vp',base.Vp,'','theta']);
+        if(base.Q!=null) rows.push(['Q',base.Q,'','theta']);
+        if(base.ka!=null) rows.push(['ka',base.ka,'','theta']);
         if(base.F!=null) rows.push(['F',base.F,'','theta']);
-        if(base.Km!=null) rows.push(['Km (mg/L)',base.Km,'MM','theta']);
+        if(base.Km!=null) rows.push(['Km',base.Km,'MM','theta']);
         if(base.Vm!=null) rows.push(['Vm',base.Vm,'MM','theta']);
         if(cov.CL_WT!=null) rows.push(['CL_WT exp',cov.CL_WT,cov.sizeDesc,'cov']);
         if(cov.VC_WT!=null) rows.push(['VC_WT exp',cov.VC_WT,cov.sizeDesc,'cov']);
@@ -416,6 +426,17 @@ function onModelChange(){
       tb.appendChild(tr);
     });
   });
+  // 출처(Reference): 라이브러리는 DOI 링크, curated는 원본 문서명
+  const hTr=document.createElement('tr');
+  hTr.innerHTML=`<td colspan="3" style="color:var(--accent);font-weight:600;font-size:11px;padding-top:10px;border-bottom:1px solid var(--border)">출처 (Reference)</td>`;
+  tb.appendChild(hTr);
+  const url = (M.refUrl && /^https?:/i.test(M.refUrl)) ? M.refUrl : null;
+  const vTr=document.createElement('tr');
+  // DOI가 있을 때만 링크 표시. 없으면 대체 링크로 채우지 않고 '—'
+  vTr.innerHTML = `<td colspan="3" style="font-size:11px;word-break:break-all">` +
+    (url ? `<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent)">${url}</a>`
+         : `<span style="color:#64748b">— (DOI 없음)</span>`) + `</td>`;
+  tb.appendChild(vTr);
 }
 
 // 예시(placeholder)로 채운 입력칸을 시각 표시 (값은 유지, 데이터 없음을 명시)
