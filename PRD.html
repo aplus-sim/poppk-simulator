@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD</title>
+<style>
+:root{--fg:#1f2328;--muted:#656d76;--accent:#1f4e79;--border:#d0d7de;--bg:#fff;--code:#f6f8fa}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:var(--fg);
+ font-family:"Malgun Gothic","Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:48px 56px;background:var(--bg);min-height:100vh;
+ box-shadow:0 0 24px rgba(0,0,0,.06)}
+h1{font-size:28px;margin:32px 0 12px;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:8px}
+h1:first-child{margin-top:0}
+h2{font-size:21px;margin:28px 0 10px;color:var(--accent)}
+h3{font-size:17px;margin:22px 0 8px}
+p{margin:10px 0}
+ul,ol{margin:10px 0;padding-left:26px}
+li{margin:4px 0}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#eef2f7;font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:var(--code);padding:1.5px 5px;border-radius:4px;font-size:13px;
+ font-family:Consolas,"Courier New",monospace}
+pre{background:var(--code);padding:14px 16px;border-radius:8px;overflow-x:auto;border:1px solid var(--border)}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+blockquote{margin:14px 0;padding:10px 16px;border-left:4px solid var(--accent);
+ background:#f6f8fa;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:28px 0}
+a{color:var(--accent)}
+@media print{body{background:#fff}.wrap{box-shadow:none;padding:0;max-width:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>PRD — PopPK Profile Simulator</h1>
+<table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>제품명</td><td>PopPK Profile Simulator (항체약물 농도-시간 프로파일 시뮬레이터)</td></tr><tr><td>버전</td><td>v2 (2026-07 개편)</td></tr><tr><td>위치</td><td><code>Agent_APLUS_SJ/simulator/</code></td></tr><tr><td>배포</td><td>Vercel — GitHub <code>aplus-sim/poppk-simulator</code> (push 시 자동 배포)</td></tr><tr><td>오프라인</td><td><code>PopPK_simulator_standalone.html</code> (더블클릭 실행)</td></tr><tr><td>상태</td><td>운영 중</td></tr></tbody></table>
+<hr>
+<h2>1. 개요 (Overview)</h2>
+<p>PopPK(모집단 약동학) 파라미터를 입력으로, <strong>항체약물(mAb)의 농도-시간 프로파일과 환자 간 변동성</strong>을 브라우저에서 즉시 시뮬레이션하는 <strong>단일 HTML 웹앱</strong>. 설치·서버·로그인 없이 실행된다.</p>
+<p><strong>핵심 설계 원칙: 데이터 주도(data-driven)</strong> 약물·모델 정보를 코드에 하드코딩하지 않고 CSV에서 읽는다. → <strong>CSV에 행만 추가하면 약물이 늘어난다.</strong></p>
+<h2>2. 배경 &amp; 문제 (Background)</h2>
+<ul><li>임상약리·PK/PD 담당자가 논문의 popPK 파라미터로 &quot;이 용법이면 농도가 어떻게 되나&quot;를 확인하려면</li></ul>
+<p>  NONMEM/R 등 전문 도구가 필요해 진입 장벽이 높다.</p>
+<ul><li>v1은 약물 2종을 코드에 하드코딩한 데모여서 확장이 불가능했고, 용법·비선형·공변량이 반영되지 않았다.</li><li>사내에 mAb popPK 파라미터(69종)와 승인 용법 데이터가 이미 정리돼 있으나 활용되지 않았다.</li></ul>
+<h2>3. 목표 (Goals)</h2>
+<ul><li><strong>G1. 확장 가능한 라이브러리</strong> — 코드 수정 없이 CSV만으로 약물 추가. 현재 <strong>약물 70종 / 모델 163개</strong>.</li><li><strong>G2. 모델 충실도</strong> — 1/2구획, IV/SC, 비선형(MM/TMDD), 공변량을 데이터에 따라 자동 반영.</li><li><strong>G3. 실제 용법 기반 시뮬</strong> — 약물별 승인 용법을 기본값으로 적용(62종).</li><li><strong>G4. 의사결정에 쓰이는 수치</strong> — Cmax·Ctrough·AUC·반감기 요약 지표 및 percentile CSV export.</li><li><strong>G5. 정직한 도구</strong> — 데이터에 없는 값·가정·미적용 항목을 화면에 명시한다.</li><li><strong>G6. 접근성</strong> — Vercel 공개 URL + 더블클릭 단일파일 두 경로 제공.</li></ul>
+<h3>Non-Goals</h3>
+<ul><li>PD/efficacy(CRP·DAS28 등) 시뮬레이션 — v1에서 시도했으나 데이터가 1종뿐이라 제거(향후 재검토).</li><li>3구획 이상, 시간의존 CL, mg/m²(BSA) 용량.</li><li>관측 농도 데이터 적합(fitting) — 본 도구는 <strong>시뮬레이션 전용</strong>이며 파라미터 추정은 하지 않는다.</li></ul>
+<h2>4. 사용자 (Users)</h2>
+<table><thead><tr><th>사용자</th><th>사용 목적</th></tr></thead><tbody><tr><td>임상약리·PK/PD 연구자</td><td>논문 popPK 파라미터로 용법별 노출 빠르게 탐색</td></tr><tr><td>모델러</td><td>NONMEM 결과의 시각적 sanity check</td></tr><tr><td>비전문가(기획·의사결정)</td><td>공개 URL로 프로파일과 요약 지표 열람</td></tr></tbody></table>
+<p><strong>주요 시나리오</strong></p>
+<ol><li>약물 선택 → 승인 용법이 자동 적용됨 → 실행 → 곡선·밴드·요약 지표 확인</li><li>체중·알부민을 바꿔 특정 환자군 노출 비교</li><li>논문이 여러 개인 약물은 모델(논문)을 바꿔가며 결과 비교</li><li>percentile(5th/median/95th) 결과를 CSV로 내보내 보고서에 사용</li></ol>
+<h2>5. 데이터 소스 (Data Spec)</h2>
+<table><thead><tr><th>파일</th><th>내용</th><th>비고</th></tr></thead><tbody><tr><td><code>PPKPARAMETER.csv</code></td><td>라이브러리 <strong>69종 / 160모델</strong> — CL, VC, VP, Q, ka, F, Km, Vm, Route, 공변량 계수, Ref size, N, Reference(DOI)</td><td><strong>단위 컬럼 없음</strong>, <strong>IIV 없음</strong></td></tr><tr><td><code>extracted_poppk_params.csv</code></td><td>curated <strong>3종</strong> (eculizumab, adalimumab, pembrolizumab/Keytruda) — 구조 파라미터 + <strong>IIV</strong> + 공변량 + RSE</td><td>description에 <strong>단위 포함</strong></td></tr><tr><td><code>regimen.csv</code></td><td>약물별 대표 승인 용법 <strong>62종</strong> — dose_mg, interval_day, route, infusion_h, indication</td><td><code>Regimen_merged</code>에서 추출</td></tr></tbody></table>
+<p><strong>regimen.csv 생성 규칙</strong> (원본 <code>Regimen_merged</code> → 정제)</p>
+<ul><li>성인(ADULT/PEDS=1), 용량&gt;0, 투여간격&gt;0 인 행만 후보</li><li><code>FIXED=2</code>면 고정 mg, 아니면 <strong>mg/kg × 65 kg</strong> 환산</li><li>음수 용량은 &quot;그 값 이하&quot; 의미이므로 절대값 사용</li><li>약물별 <strong>최빈(dose, interval, route)</strong> 조합을 대표 용법으로 선택 (이상치 방어)</li><li>indication 텍스트는 ASCII 정규화(Excel 문자 깨짐 방지)</li></ul>
+<h2>6. 기능 요구사항 (Functional Requirements)</h2>
+<h3>F1. 데이터 주도 모델 엔진</h3>
+<ul><li>CSV 컬럼에서 <strong>구조 자동 판별</strong>: <code>VP</code>·<code>Q</code> 유무 → 구획수, <code>ka</code> 유무 → 흡수(SC)/IV</li><li>현재 구성: 2구획 162 / 1구획 1, 흡수(SC) 53, 비선형(MM) 31</li><li>약물당 논문이 여럿이면 <strong>모델 선택 드롭다운</strong> 제공 (기본값 = 환자수 N 최대, curated 우선)</li></ul>
+<h3>F2. 시뮬레이션 엔진</h3>
+<ul><li>상태: <code>[depot, central, peripheral]</code>, <strong>가변스텝 RK4</strong></li><li><strong>이벤트 인식형 시간 격자</strong>: 투여 시점·주입 구간을 세분하고 <strong>주입 종료(피크) 시점을 격자에 포함</strong></li><li>주입은 스텝-주입창 <strong>겹침 평균 속도</strong>로 적용해 질량을 정확히 보존</li></ul>
+<h3>F3. 비선형 소실 (MM/TMDD)</h3>
+<ul><li><code>Km</code>·<code>Vm</code>이 <strong>둘 다 있을 때만</strong> 적용: <code>dA/dt −= Vm·C/(Km+C)</code> (선형 CL과 <strong>병렬</strong>)</li><li>UI에 &quot;비선형 MM 적용&quot; 배지 표시</li></ul>
+<h3>F4. 공변량 (동적)</h3>
+<ul><li>모델에 <strong>존재하는 공변량만</strong> 입력칸 자동 생성 (체중·성별·알부민)</li><li>기준값(Ref size, ALB)으로 정규화</li><li>크기 공변량이 <strong>BSA/FFM 등 미지원 기준</strong>이면 &quot;미적용&quot; 사유 표시</li></ul>
+<h3>F5. 용법 (Regimen)</h3>
+<ul><li>라이브러리 약물은 <strong>승인 용법 자동 적용</strong>, 화면에 &quot;✓ 승인 용법 적용 · 200mg q21day IV · 적응증&quot; 표시</li><li>용법 데이터가 없으면 값은 채우되 <strong>주황색 + 툴팁으로 &quot;예시값&quot;임을 명시</strong> (모델 실행 보장)</li><li>주입시간은 <strong>항상 시간(h)</strong> 단위로 입력받아 내부에서 모델 시간단위로 변환</li></ul>
+<h3>F6. 변동성 (Monte-Carlo)</h3>
+<ul><li>개체별 파라미터를 <strong>log-normal</strong>로 샘플링, <strong>5–95% 밴드 + 중앙값 + typical</strong> 표시</li><li>curated는 <strong>published IIV</strong>, 라이브러리는 IIV가 없으므로 <strong>사용자 지정 가정 %CV</strong>(기본 30%)</li><li>밴드는 <strong>개체간 변동(IIV)만</strong> 반영하며 잔차·분석오차는 미포함 — 화면에 명시</li></ul>
+<h3>F7. 요약 지표</h3>
+<ul><li>Cmax, Cmax(정상상태), Ctrough, AUC(0–종료), AUC,τ, <strong>말기 반감기</strong>(꼬리 구간 log-linear 회귀)</li></ul>
+<h3>F8. 파라미터 표</h3>
+<ul><li><strong>θ(구조) / η(IIV) / 공변량 / 기타</strong> 4구획으로 논문 표처럼 구성</li><li>단위는 <strong>데이터에 있는 경우에만</strong> 표시</li><li><strong>출처(Reference)</strong>: DOI가 있으면 클릭 링크, 없으면 <code>— (DOI 없음)</code> (대체 링크로 채우지 않음)</li></ul>
+<h3>F9. 내보내기</h3>
+<ul><li><code>time, median, p5, p95, typical</code> CSV export</li></ul>
+<h2>7. 모델링 사양 (Model Spec)</h2>
+<p><strong>소실</strong></p>
+<pre><code>dA_c/dt = 유입 − CL/Vc·A_c − Vm·C/(Km+C) − Q/Vc·A_c + Q/Vp·A_p</code></pre>
+<p><strong>공변량</strong></p>
+<table><thead><tr><th>모델</th><th>수식</th></tr></thead><tbody><tr><td>라이브러리(일반)</td><td><code>CL = CL₀·(WT/Ref)^CL_WT·(ALB/RefALB)^CL_ALB·exp(CL_SEX·sexFlag)</code></td></tr><tr><td>eculizumab</td><td><code>CL = θ1·(WT/80.9)^θ7</code>, <code>Vc = θ2·(WT/80.9)^θ8</code></td></tr><tr><td>adalimumab</td><td><code>CL/F = θ·exp(SX_CL·sex)·(WT/70)^WT_CL</code></td></tr><tr><td>pembrolizumab(Keytruda)</td><td><code>CL = 0.202·(WT/76.8)^0.578·(ALB/39.6)^-0.854·[여성 ×0.848]</code></td></tr></tbody></table>
+<blockquote>라이브러리의 성별·알부민 <strong>함수 형태</strong>는 원 데이터에 없어 가정(성별=지수, 알부민=거듭제곱)이며 화면에 명시한다. Keytruda는 제공 수식에 형태가 명시돼 있어 <strong>비례형 <code>(1+계수)</code></strong> 로 정확히 구현했다.</blockquote>
+<h2>8. 비기능 요구사항 (Non-Functional)</h2>
+<ul><li><strong>성능</strong>: N=300 Monte-Carlo, 격자 ~4,000점 기준 <strong>약 0.5초</strong> 이내</li><li><strong>의존성</strong>: Plotly, PapaParse (CDN) — 그 외 빌드/런타임 없음</li><li><strong>배포</strong>: <code>git push</code> → Vercel 자동 배포. 정본은 저장소 루트 <code>index.html</code></li><li><strong>오프라인</strong>: <code>build_standalone.py</code>가 CSV 3개를 HTML에 내장한 단일파일 생성</li><li><strong>브라우저</strong>: 최신 Chrome/Edge 기준</li></ul>
+<h2>9. 가정 및 한계 (Assumptions &amp; Limitations)</h2>
+<table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody><tr><td>라이브러리 단위</td><td><code>PPKPARAMETER.csv</code>에 단위 컬럼이 없어 <strong>L/day·L 로 가정</strong>(curated eculizumab과 값 교차검증). 화면에 &quot;가정&quot;으로 표기</td></tr><tr><td>라이브러리 IIV</td><td>데이터에 없어 <strong>사용자 지정 %CV</strong>로 대체</td></tr><tr><td>성별·알부민 형태</td><td>함수 형태가 데이터에 없어 <strong>근사</strong></td></tr><tr><td>BSA/FFM 공변량</td><td>약 12개 모델에서 <strong>미적용</strong>(체중 기반만 지원), 화면에 사유 표시</td></tr><tr><td>mg/kg 용법</td><td>65kg 고정 환산이며 <strong>체중 연동 안 됨</strong></td></tr><tr><td>적응증별 용법</td><td>약물당 대표 용법 1개만 사용 (rituximab 등은 적응증마다 용법이 다름)</td></tr><tr><td>Km 단위</td><td>mg/L 가정, 이상치(&gt;100)는 &quot;⚠단위확인&quot; 경고</td></tr><tr><td>IV/SC 이중경로</td><td>5종은 모델의 ka 유무로 경로가 고정됨</td></tr><tr><td>관측 데이터</td><td>예측 곡선만 제공하며 실측치와의 비교는 미지원</td></tr></tbody></table>
+<h2>10. 검증 기준 (Acceptance Criteria)</h2>
+<ol><li>드롭다운에 <strong>약물 70종 / 모델 163개</strong>가 표시된다.</li><li>curated 회귀: eculizumab Cmax ≈ <strong>387</strong>(typical), adalimumab ≈ <strong>9.0</strong>.</li><li>짧은 주입에서 Cmax가 <strong>볼루스 극한으로 수렴</strong>한다 (tinf 0.5/0.1/0.01 → 436.1/436.7/436.8, 볼루스 436.9).</li><li>단회투여 시 투입 질량이 보존된다(900mg 투여 → 피크 질량 894–900mg).</li><li>비선형(MM) 약물은 저농도에서 선형 대비 더 빠르게 감소한다.</li><li>공변량 변경이 곡선에 반영된다 (체중↑ → Cmax↓, 저알부민 → 노출↓).</li><li>말기 반감기가 이론값과 일치한다 (adalimumab 23.4 day = ln2/(CL/V)).</li><li>승인 용법이 적용된다 (pembrolizumab 200mg q21day → Cmax≈103, Ctrough≈38).</li><li>데이터가 없는 값은 <strong>예시값으로 표시</strong>되고, DOI가 없으면 대체 링크를 넣지 않는다.</li><li>단일파일이 CSV 없는 폴더에서도 동일하게 동작한다.</li></ol>
+<h2>11. 향후 과제 (Roadmap)</h2>
+<table><thead><tr><th>우선순위</th><th>과제</th></tr></thead><tbody><tr><td>상</td><td><strong>관측값 overlay</strong> — <code>Human_merged</code>의 실측 Cmax/Ctrough를 곡선에 겹쳐 예측 vs 실측 비교</td></tr><tr><td>중</td><td><strong>BSA 공변량 지원</strong> (~12모델), <strong>mg/kg 체중 연동 용량</strong>, <strong>적응증별 용법 선택</strong></td></tr><tr><td>하</td><td>IV/SC 경로 선택(5종), 데이터 주도 PD, 3구획·mg/m² 용량, 라이브러리 IIV 확보</td></tr></tbody></table>
+<h2>12. 부록 — 파일 구성 &amp; 작업 흐름</h2>
+<pre><code>simulator/
+├── index.html                       정본 앱 (Vercel 루트 서빙)
+├── PopPK_simulator_standalone.html  더블클릭용 (CSV 3개 내장)
+├── build_standalone.py              단일파일 빌드
+├── PPKPARAMETER.csv                 라이브러리 69종
+├── extracted_poppk_params.csv       curated 3종 (IIV 포함)
+├── regimen.csv                      승인 용법 62종
+├── PRD.md                           본 문서
+└── 개선점_트래커.md                 개선 이력·시행착오</code></pre>
+<pre><code>index.html 수정 → python build_standalone.py → git push → Vercel 자동 배포</code></pre>
+</div>
+</body>
+</html>
