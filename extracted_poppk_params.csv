@@ -32,3 +32,15 @@ adalimumab,prop_PK,Proportional error for PK (%),24,9
 adalimumab,add_CRP,Additive error for CRP (mg/L),1.6,29
 adalimumab,prop_CRP,Proportional error for CRP (%),52,10
 adalimumab,add_DAS,Additive error for DAS28,68,8
+pembrolizumab,CL,Clearance (L/day),0.202,
+pembrolizumab,Vc,Central volume V1 (L),3.48,
+pembrolizumab,Vp,Peripheral volume V2 (L),4.06,
+pembrolizumab,Q,Intercompartmental CL (L/day),0.795,
+pembrolizumab,CL_WT,Weight exponent on CL (ref 76.8),0.578,
+pembrolizumab,VC_WT,Weight exponent on Vc (ref 76.8),0.492,
+pembrolizumab,CL_ALB,Albumin exponent on CL (ref 39.6),-0.854,
+pembrolizumab,VC_ALB,Albumin exponent on Vc (ref 39.6),-0.178,
+pembrolizumab,CL_SEX,Female effect on CL,-0.152,
+pembrolizumab,VC_SEX,Female effect on Vc,-0.134,
+pembrolizumab,IIV_CL,IIV CL (%CV),38,
+pembrolizumab,IIV_Vc,IIV Vc (%CV),21,

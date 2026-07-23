@@ -86,6 +86,18 @@ adalimumab,prop_PK,Proportional error for PK (%),24,9
 adalimumab,add_CRP,Additive error for CRP (mg/L),1.6,29
 adalimumab,prop_CRP,Proportional error for CRP (%),52,10
 adalimumab,add_DAS,Additive error for DAS28,68,8
+pembrolizumab,CL,Clearance (L/day),0.202,
+pembrolizumab,Vc,Central volume V1 (L),3.48,
+pembrolizumab,Vp,Peripheral volume V2 (L),4.06,
+pembrolizumab,Q,Intercompartmental CL (L/day),0.795,
+pembrolizumab,CL_WT,Weight exponent on CL (ref 76.8),0.578,
+pembrolizumab,VC_WT,Weight exponent on Vc (ref 76.8),0.492,
+pembrolizumab,CL_ALB,Albumin exponent on CL (ref 39.6),-0.854,
+pembrolizumab,VC_ALB,Albumin exponent on Vc (ref 39.6),-0.178,
+pembrolizumab,CL_SEX,Female effect on CL,-0.152,
+pembrolizumab,VC_SEX,Female effect on Vc,-0.134,
+pembrolizumab,IIV_CL,IIV CL (%CV),38,
+pembrolizumab,IIV_Vc,IIV Vc (%CV),21,
 </script>
 <script type="text/csv" id="data-library">
 mAb,Reference,CL,VC,VP,Q,ka,F,Km,Vm,Route,NonLin,TMDD,Time dependency,Fixed Parameters,Detection,N,Smpls,CL_WT,VC_WT,VP_WT,Q_WT,Size descriptor,Ref size,CL_SEX,VC_SEX,VP_SEX,SEX,CL_ALB,VC_ALB,VP_ALB,ALB,CL_ADA,cov_remark,Basemodel included,Modelcode included
@@ -444,6 +456,24 @@ const CURATED = {
     iiv:{ CL:"IIV_CL", Vc:"IIV_Vd" },
     corr:null,
     defaults:{ dose:40, tinf:0, tau:14, ndose:8, tend:168, wt:70 }
+  },
+  pembrolizumab: {
+    label: "Pembrolizumab (Keytruda) — 2-compartment IV · curated(IIV+cov)",
+    brand:"Keytruda",
+    timeUnit:"day", timeLabel:"day", concUnit:"mg/L",
+    structure:{ cmt:2, absorption:false },
+    note:"CL=0.202·(WGT/76.8)^0.578·(ALB/39.6)^-0.854·[여성 ×0.848]; Vc=3.48·(WGT/76.8)^0.492·(ALB/39.6)^-0.178·[여성 ×0.866]. 단위 L/day. (추가 공변량 BSLD·eGFR·암종·ECOG·IPI는 데이터엔 있으나 앱 미적용)",
+    build(P, inp){
+      const wt=inp.wt, sex=(inp.sex||0), alb=(inp.alb!=null?inp.alb:39.6);
+      const fem = sex===0 ? 1 : 0;   // 앱: 0=여성
+      return { CL: P.CL*Math.pow(wt/76.8,P.CL_WT)*Math.pow(alb/39.6,P.CL_ALB)*(fem?(1+P.CL_SEX):1),
+               Vc: P.Vc*Math.pow(wt/76.8,P.VC_WT)*Math.pow(alb/39.6,P.VC_ALB)*(fem?(1+P.VC_SEX):1),
+               Vp: P.Vp, Q: P.Q, ka:null, F:1 };
+    },
+    covMeta:{ usesWt:true, refSize:76.8, sizeDesc:'BW', usesSex:true, sexDir:'F', usesAlb:true, refAlb:39.6 },
+    iiv:{ CL:"IIV_CL", Vc:"IIV_Vc" },
+    corr:null,
+    defaults:{ dose:200, tinf:0.5, tau:21, ndose:6, tend:168, wt:76.8 }
   }
 };
 
@@ -462,7 +492,7 @@ function ingestCurated(text){
     addModel({
       drug, source:'curated', label:C.label, ref:'curated',
       timeUnit:C.timeUnit, timeLabel:C.timeLabel, concUnit:C.concUnit,
-      structure:C.structure, note:C.note, nonlin:false, N:null,
+      structure:C.structure, note:C.note, nonlin:false, N:null, brand:C.brand,
       iiv:C.iiv, corr:C.corr, defaults:C.defaults, covMeta:C.covMeta,
       build:(inp)=>C.build(P, inp),
       paramRows:()=>Object.keys(PARAMS[drug]).map(k=>[k, PARAMS[drug][k].estimate, 'RSE '+(PARAMS[drug][k].rse==null?'–':PARAMS[drug][k].rse)+'%', classifyParam(k)])
@@ -568,8 +598,10 @@ function populateDrugs(){
   names.forEach(n=>{
     // 모델 정렬: curated 먼저, 그다음 N 큰 순
     DRUGS[n].sort((x,y)=> (x.source==='curated'?-1:0) - (y.source==='curated'?-1:0) || ((y.N||0)-(x.N||0)) );
+    const curM = DRUGS[n].find(m=>m.source==='curated');
+    const brand = curM && curM.brand ? ` (${curM.brand})` : '';
     const o=document.createElement('option'); o.value=n;
-    o.textContent = n + (DRUGS[n].some(m=>m.source==='curated') ? ' ★' : '') + '  ('+DRUGS[n].length+')';
+    o.textContent = n + brand + (curM ? ' ★' : '') + '  ('+DRUGS[n].length+')';
     sel.appendChild(o);
   });
   const initial = DRUGS['eculizumab'] ? 'eculizumab' : names[0];
@@ -583,7 +615,7 @@ function onDrugChange(){
   const msel=document.getElementById('model'); msel.innerHTML='';
   (DRUGS[drug]||[]).forEach((m,i)=>{
     const o=document.createElement('option'); o.value=i;
-    o.textContent = m.source==='curated' ? '★ curated (IIV+PD)'
+    o.textContent = m.source==='curated' ? ('★ '+(m.label? m.label.split('—')[0].trim() : 'curated')+' · curated')
       : `${m.ref} · N=${m.N==null?'?':m.N} · ${m.route||''}`;
     msel.appendChild(o);
   });
